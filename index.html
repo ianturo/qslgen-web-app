@@ -1,0 +1,1214 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Generador de QSL</title>
+<link rel="icon" href="favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tourney&family=Mitr&family=Sour+Gummy:wght@400;700&family=Audiowide&family=Stylish&family=Readex+Pro&family=Rampart+One&family=Agbalumo&family=Oswald:wght@400;700&family=Shalimar&family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root{
+    color-scheme:dark;
+    --bg:#0f141b; --panel:#171e28; --panel2:#1e2733; --line:#2b3644; --text:#e6edf3; --muted:#8b98a8;
+    --accent:#b7d1d7; --accent2:#c7e1d7; --onAccent:#111; --ok:#22c55e; --err:#ef4444; --info:#38bdf8;
+    --danger:#fca5a5; --check1:#232c38; --check2:#1a222c; --rowActive:#2a2111; --bannerBg:#3b1d1d; --bannerText:#fecaca;
+    --loginBg:radial-gradient(circle at 30% 20%,#1f2a38,#0b0f14);
+  }
+  :root[data-theme=light]{
+    color-scheme:light;
+    --bg:#eef2f6; --panel:#ffffff; --panel2:#f3f6f9; --line:#d3dbe4; --text:#18212c; --muted:#5a6676;
+    --accent:#1f6a85; --accent2:#174763; --onAccent:#fff; --ok:#15803d; --err:#dc2626; --info:#0369a1;
+    --danger:#b91c1c; --check1:#e3e8ee; --check2:#f7f9fb; --rowActive:#fdf3d8; --bannerBg:#fde8e8; --bannerText:#7f1d1d;
+    --loginBg:radial-gradient(circle at 30% 20%,#ffffff,#d9e2ec);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Arial,system-ui,sans-serif}
+  h1{font:700 22px Arial,sans-serif;letter-spacing:.5px;margin:0}
+  h2{font:600 15px Arial,sans-serif;margin:0}
+  a{color:var(--accent2)}
+  input,select,textarea,button{font:inherit;color:inherit}
+  input[type=text],input[type=password],input[type=email],input[type=number],select,textarea{
+    width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+  textarea{resize:vertical;min-height:70px;font-family:ui-monospace,Consolas,monospace;font-size:13px}
+  input[type=color]{width:40px;height:30px;padding:0;border:1px solid var(--line);border-radius:6px;background:none}
+  label{display:block;color:var(--muted);font-size:12px;margin:8px 0 3px}
+  label.inline{display:flex;align-items:center;gap:6px;color:var(--text);font-size:13px;margin:6px 0}
+  button{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+  button:hover{border-color:var(--accent)}
+  button.primary{background:var(--accent);border-color:var(--accent);color:var(--onAccent);font-weight:600}
+  button.primary:hover{background:var(--accent2)}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .row{display:flex;gap:8px;align-items:flex-end}
+  .row>*{flex:1;min-width:0}
+  .row>.auto{flex:0 0 auto}
+  .muted{color:var(--muted)} .small{font-size:12px}
+  header{display:flex;align-items:center;gap:16px;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--panel)}
+  header .call{font:700 28px Arial;color:var(--accent2)}
+  header .spacer{flex:1}
+  main{display:grid;grid-template-columns:380px 1fr;gap:16px;padding:16px;align-items:start}
+  aside{display:flex;flex-direction:column;gap:12px}
+  details{background:var(--panel);border:1px solid var(--line);border-radius:10px}
+  details>summary{cursor:pointer;padding:12px 14px;font-weight:600;list-style:none;display:flex;gap:8px;align-items:center}
+  details>summary::-webkit-details-marker{display:none}
+  details>summary::before{content:'▸';color:var(--accent);transition:transform .15s}
+  details[open]>summary::before{transform:rotate(90deg)}
+  details>.body{padding:0 14px 14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+  .canvasWrap{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:#000}
+  #preview{display:block;width:100%;height:auto;touch-action:none;cursor:default;outline:none}
+  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+  .chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+  .chip{font:12px ui-monospace,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 6px;cursor:pointer}
+  .chip:hover{border-color:var(--accent)}
+  .logoGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:6px}
+  .logo{position:relative;aspect-ratio:1;border:1px solid var(--line);border-radius:6px;padding:4px;cursor:pointer;
+    background:repeating-conic-gradient(var(--check1) 0 25%,var(--check2) 0 50%) 0 0/12px 12px}
+  .logo img{width:100%;height:100%;object-fit:contain;display:block}
+  .logo:hover{border-color:var(--accent2)}
+  .logo.on{border:2px solid var(--accent);padding:3px}
+  .logo.on::after{content:'✓';position:absolute;top:-6px;right:-6px;background:var(--accent);color:var(--onAccent);border-radius:50%;width:16px;height:16px;font-size:11px;line-height:16px;text-align:center;font-weight:700}
+  .elList{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+  .elList button{padding:4px 9px;font-size:12px}
+  .elList button.sel{border-color:var(--accent);color:var(--accent2)}
+  .elList button.hidden{opacity:.45;text-decoration:line-through}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+  th{color:var(--muted);font-weight:600;position:sticky;top:0;background:var(--panel)}
+  tbody tr{cursor:pointer}
+  tbody tr:hover{background:var(--panel2)}
+  tbody tr.active{background:var(--rowActive)}
+  .tableWrap{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+  .st-ok{color:var(--ok)} .st-err{color:var(--err)} .st-info{color:var(--info)}
+  .icon{background:none;border:none;padding:2px 5px;cursor:pointer;font-size:15px}
+  #log{max-height:160px;overflow:auto;font:12px ui-monospace,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;margin-top:8px;white-space:pre-wrap}
+  .banner{background:var(--bannerBg);border:1px solid var(--err);color:var(--bannerText);padding:10px 14px;border-radius:8px;margin:16px 16px 0}
+  .drop{border:2px dashed var(--line);border-radius:8px;padding:14px;text-align:center;color:var(--muted);cursor:pointer}
+  .drop:hover,.drop.over{border-color:var(--accent);color:var(--text)}
+  #login{position:fixed;inset:0;background:var(--loginBg);display:flex;align-items:center;justify-content:center;z-index:10;padding:16px}
+  #login .card{width:100%;max-width:380px;padding:28px;text-align:center}
+  #login input{text-align:center;font:700 26px Oswald;text-transform:uppercase;letter-spacing:2px;margin:14px 0}
+  .progress{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin-top:8px;display:none}
+  .progress>div{height:100%;width:0;background:var(--accent);transition:width .2s}
+  @media (max-width:980px){ main{grid-template-columns:1fr;padding:12px} header{padding:10px 16px;flex-wrap:wrap} }
+</style>
+<script>
+// Tema claro/oscuro, compartido con manual.html. Se aplica antes de pintar para evitar el parpadeo;
+// sin preferencia guardada sigue al sistema. "qsl-theme" no empieza por "qslapp:", así que "Borrar todo" lo conserva.
+(function () {
+  const root = document.documentElement, mq = matchMedia('(prefers-color-scheme: light)');
+  let choice = null;
+  try { choice = localStorage.getItem('qsl-theme'); } catch {}
+  function apply() {
+    root.dataset.theme = choice || (mq.matches ? 'light' : 'dark');
+    document.querySelectorAll('.themeBtn').forEach(b => b.textContent = root.dataset.theme === 'light' ? '🌙 Tema oscuro' : '☀️ Tema claro');
+  }
+  window.toggleTheme = () => {
+    choice = root.dataset.theme === 'light' ? 'dark' : 'light';
+    try { localStorage.setItem('qsl-theme', choice); } catch {}
+    apply();
+  };
+  mq.addEventListener('change', apply);
+  addEventListener('storage', e => { if (e.key === 'qsl-theme') { choice = e.newValue; apply(); } });   // cambiado en otra pestaña
+  document.addEventListener('DOMContentLoaded', apply);
+  apply();
+})();
+</script>
+</head>
+<body>
+
+<!-- ====== Acceso por indicativo ====== -->
+<div id="login">
+  <div class="card">
+    <img src="https://lh3.googleusercontent.com/pw/AP1GczPC239LM2GKhSzLFpe1-l9issPxvTSNrqt3_lHJvdRoeR0q8iaQD1yT0QevrOj8bpB9LdnXhFZAeI8YD3-00EGVRnBgO5z1TWkz1oQ4sN9gxDDu_u8RK4_DZDZzWioS8zwDOiuBcTKUqR0376hMQXLVlg=w384-h250-s-no-gm" width="250" height="163" >
+    <h1>📻 Generador de QSL 🖄</h1>
+    <p class="muted small">Ingresa tu indicativo para comenzar. Tus datos se guardan solo en este navegador, nunca en el servidor. Tú decides si también se recuerdan el Session ID de QRZ y la contraseña de Gmail.</p>
+    <p class="muted small">Creado por HK4Q</p>
+    <input id="loginCall" type="text" placeholder="HK4AAA" autocomplete="off" maxlength="15">
+    <button class="primary" id="loginBtn" style="width:100%">Entrar</button>
+    <p class="small" style="margin:14px 0 0"><a href="manual.html" target="_blank">📖 Manual de usuario</a></p>
+    <button class="themeBtn small" onclick="toggleTheme()" style="margin-top:10px"></button>
+  </div>
+</div>
+
+<header>
+  <img src="https://lh3.googleusercontent.com/pw/AP1GczPC239LM2GKhSzLFpe1-l9issPxvTSNrqt3_lHJvdRoeR0q8iaQD1yT0QevrOj8bpB9LdnXhFZAeI8YD3-00EGVRnBgO5z1TWkz1oQ4sN9gxDDu_u8RK4_DZDZzWioS8zwDOiuBcTKUqR0376hMQXLVlg=w384-h250-s-no-gm" width="82" height="54" >
+  <h1>Generador de QSL - </h1>
+  <span class="call" id="hdrCall"></span>
+  <span class="spacer"></span>
+  <span class="muted small" id="saveInfo"></span>
+  <a href="manual.html" target="_blank">📖 Manual de usuario</a>
+  <button class="themeBtn" onclick="toggleTheme()"></button>
+  <button id="logoutBtn">Cambiar indicativo</button>
+  <button id="resetAllBtn" style="border-color:var(--err);color:var(--danger)">🗑 Borrar todo</button>
+</header>
+<div id="fileWarn" class="banner" style="display:none">
+  Abriste la página como archivo local. La consulta a QRZ y el envío de correos necesitan el servidor: ejecuta <code>python server.py</code> y entra a <a href="http://localhost:8000">http://localhost:8000</a>.
+</div>
+
+<main>
+  <aside>
+    <!-- 1. ADIF -->
+    <details open>
+      <summary>1. Archivo ADIF</summary>
+      <div class="body">
+        <div class="drop" id="adifDrop">Arrastra aquí tu archivo <b>.adi / .adif</b> o haz clic para elegirlo
+          <input type="file" id="adifFile" accept=".adi,.adif,.txt" hidden></div>
+        <p class="small muted" id="adifInfo" style="margin:8px 0 0"></p>
+      </div>
+    </details>
+
+    <!-- 2. Estación -->
+    <details open>
+      <summary>2. Mi estación</summary>
+      <div class="body">
+        <div class="row">
+          <div><label>Mi indicativo</label><input type="text" data-k="station.call" style="text-transform:uppercase"></div>
+          <div><label>Nombre</label><input type="text" data-k="station.name"></div>
+        </div>
+        <div class="row">
+          <div><label>QTH / Ciudad</label><input type="text" data-k="station.qth"></div>
+          <div><label>País</label><input type="text" data-k="station.country"></div>
+        </div>
+        <div class="row">
+          <div><label>Grid</label><input type="text" data-k="station.grid"></div>
+          <div><label>Zona CQ</label><input type="text" data-k="station.cq"></div>
+          <div><label>Zona ITU</label><input type="text" data-k="station.itu"></div>
+        </div>
+        <div class="row">
+          <div><label>Equipo (Rig)</label><input type="text" data-k="station.rig"></div>
+          <div><label>Antena</label><input type="text" data-k="station.ant"></div>
+        </div>
+        <div class="row">
+          <div><label>Potencia (W)</label><input type="text" data-k="station.pwr" placeholder="del ADIF"></div>
+          <div><label>Formato de fecha</label>
+            <select data-k="station.dateFmt">
+              <option value="ymd">2025-02-22</option><option value="dmy">22/02/2025</option>
+              <option value="dMy">22-FEB-2025</option><option value="mdy">02/22/2025</option>
+            </select></div>
+        </div>
+        <label>Texto extra ({EXTRA})</label><input type="text" data-k="station.extra" placeholder="Ej: Miembro LCRA #1234">
+      </div>
+    </details>
+
+    <!-- 3. Diseño -->
+    <details open>
+      <summary>3. Diseño de la QSL</summary>
+      <div class="body">
+        <label>Imagen de fondo (se ajusta a 1240×797)</label>
+        <div class="row">
+          <div class="drop" id="bgDrop" style="padding:10px">Subir imagen de fondo
+            <input type="file" id="bgFile" accept="image/*" hidden></div>
+          <button class="auto" id="bgClear" title="Quitar fondo">✕</button>
+        </div>
+        <label style="margin-top:12px">Logos (clic para activar o desactivar)</label>
+        <div class="logoGrid" id="logoGrid"><span class="small muted">Cargando…</span></div>
+        <label>Mis iconos (PNG con transparencia recomendado)</label>
+        <div class="drop" id="iconDrop" style="padding:10px">Subir iconos personales
+          <input type="file" id="iconFile" accept="image/*" multiple hidden></div>
+        <div class="logoGrid" id="myIconGrid" style="margin-top:6px"></div>
+        <label style="margin-top:12px">Elementos (haz clic o arrástralos en la vista previa; las imágenes se redimensionan desde la esquina; Supr o Retroceso desactiva el seleccionado)</label>
+        <div class="elList" id="elList"></div>
+        <div id="elEditor"></div>
+        <div class="row" style="margin-top:10px">
+          <button id="addText">+ Añadir texto</button>
+          <button id="resetLayout">Restablecer diseño</button>
+        </div>
+        <label>Variables disponibles (clic para insertar)</label>
+        <div class="chips" id="chips"></div>
+      </div>
+    </details>
+
+    <!-- 4. QRZ -->
+    <details>
+      <summary>4. QRZ.com</summary>
+      <div class="body">
+        <label>Session ID (s=…)</label>
+        <input type="text" data-k="qrz.session" placeholder="p.ej. 2331uf894c4bd29f3923f3bacf02c532d7bd9">
+        <label class="inline"><input type="checkbox" data-k="qrz.remember"> Recordar el Session ID en este navegador</label>
+        <p class="small muted">Se consulta <code>xmldata.qrz.com/xml/?s=SESSION;callsign=CALL</code>. El correo solo lo entrega QRZ si tu suscripción XML lo incluye.</p>
+        <div class="row"><button id="qrzBtn" class="primary">Consultar seleccionados</button><button id="qrzClear" class="auto">Limpiar caché</button></div>
+        <div class="progress" id="qrzProg"><div></div></div>
+      </div>
+    </details>
+
+    <!-- 5. Correo -->
+    <details>
+      <summary>5. Envío por Gmail</summary>
+      <div class="body">
+        <div class="row">
+          <div><label>Cuenta Gmail</label><input type="email" data-k="mail.user" placeholder="tucorreo@gmail.com"></div>
+        </div>
+        <label>Contraseña de aplicación</label>
+        <div class="row">
+          <input type="password" id="mailPass" data-k="mail.pass" placeholder="xxxx xxxx xxxx xxxx" autocomplete="off">
+          <button class="auto" id="mailTest">Probar</button>
+        </div>
+        <label class="inline"><input type="checkbox" data-k="mail.rememberPass"> Recordar la contraseña en este navegador</label>
+        <label>Nombre del remitente</label><input type="text" data-k="mail.fromName">
+        <label>Asunto</label><input type="text" data-k="mail.subject">
+        <label>Mensaje</label><textarea data-k="mail.body" rows="9"></textarea>
+        <p class="small muted" style="margin:4px 0">Usa {NOMBRE} para el nombre que devuelve QRZ y {QSOS} para la lista de contactos.</p>
+        <div class="row">
+          <div><label>Formato de imagen</label>
+            <select data-k="mail.format"><option value="jpg">JPG (más liviano)</option><option value="png">PNG</option></select></div>
+        </div>
+        <label class="inline"><input type="checkbox" data-k="mail.group"> Un solo correo por indicativo (todas sus QSL adjuntas)</label>
+        <label class="inline"><input type="checkbox" data-k="mail.skipSent"> No reenviar a los ya enviados</label>
+        <button id="sendBtn" class="primary" style="width:100%;margin-top:6px">Enviar QSL por correo</button>
+        <div class="progress" id="sendProg"><div></div></div>
+      </div>
+    </details>
+
+    <!-- 6. Respaldo -->
+    <details>
+      <summary>6. Guardar / cargar configuración</summary>
+      <div class="body">
+        <p class="small muted" style="margin:0 0 6px">Guarda en un archivo los datos de tu estación, el diseño de la QSL (fondo, logos, iconos y textos) y la configuración del correo, para cargarlos en otro computador o navegador.</p>
+        <label class="inline"><input type="checkbox" id="cfgQsos"> Incluir contactos, estado de envíos y datos de QRZ</label>
+        <label class="inline"><input type="checkbox" id="cfgSecrets"> Incluir Session ID de QRZ y contraseña de Gmail</label>
+        <p class="small" id="cfgSecretsWarn" style="display:none;margin:0 0 6px;color:white;background-color:red;text-align: center">⚠ Quedarán sin cifrar dentro del archivo. Guárdalo en un lugar seguro y no lo compartas.⚠</p>
+        <div class="row" style="margin-top:6px">
+          <button id="cfgSave">💾 Guardar configuración</button>
+          <button id="cfgLoad">📂 Cargar configuración</button>
+          <input type="file" id="cfgFile" accept=".json,application/json" hidden>
+        </div>
+      </div>
+    </details>
+  </aside>
+
+  <section style="display:flex;flex-direction:column;gap:16px;min-width:0">
+    <div class="card">
+      <div class="toolbar">
+        <h2>Vista previa</h2><span class="muted small" id="prevInfo"></span>
+        <span style="flex:1"></span>
+        <button id="dlOne">Descargar esta QSL</button>
+        <button id="copyOne" title="Copia la imagen para pegarla en WhatsApp, Telegram, un correo, etc.">📋 Copiar imagen</button>
+      </div>
+      <div class="canvasWrap"><canvas id="preview" width="1240" height="797" tabindex="0" title="Arrastra un elemento para moverlo; Supr o Retroceso lo desactiva"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <h2>Contactos</h2><span class="muted small" id="qsoCount"></span>
+        <span style="flex:1"></span>
+        <input type="text" id="filter" placeholder="Filtrar…" style="width:160px">
+        <button id="dlZip">Descargar seleccionadas (ZIP)</button>
+      </div>
+      <div class="tableWrap">
+        <table>
+          <thead><tr>
+            <th><input type="checkbox" id="selAll"></th><th>Indicativo</th><th>Fecha</th><th>UTC</th><th>MHz</th>
+            <th>Banda</th><th>Modo</th><th>RST</th><th>Nombre</th><th>Correo</th><th>Estado</th><th></th>
+          </tr></thead>
+          <tbody id="qsoBody"><tr><td colspan="12" class="muted">Carga un archivo ADIF para ver los contactos.</td></tr></tbody>
+        </table>
+      </div>
+      <div id="log"></div>
+    </div>
+    <div>
+        <p class="muted small" align="center">Creado por HK4Q</p>
+    </div>
+  </section>
+</main>
+
+<script>
+'use strict';
+const W = 1240, H = 797;
+const FONTS = ['Agbalumo', 'Audiowide', 'Arial', 'Courier New', 'Mitr', 'Orbitron', 'Oswald', 'Rampart One', 'Readex Pro', 'Roboto Slab', 'Shalimar', 'Sour Gummy', 'Stylish','Times New Roman', 'Tourney'];
+const COLS = { call:'Indicativo', date:'Fecha', time:'Hora UTC', freq:'Frecuencia', band:'Banda', mode:'Modo', rst:'RST Env.', rstr:'RST Rec.' };
+const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const VARS = ['MI_INDICATIVO','MI_NOMBRE','MI_QTH','MI_PAIS','MI_GRID','CQ','ITU','RIG','ANTENA','POTENCIA','EXTRA',
+  'CALL','NOMBRE','NOMBRE_COMPLETO','FECHA','HORA','FREQ','BANDA','MODO','RST_ENV','RST_REC','QTH','GRID','PAIS','QSOS'];
+const BANDS = [[1.8,2,'160m'],[3.5,4,'80m'],[5.06,5.45,'60m'],[7,7.3,'40m'],[10.1,10.15,'30m'],[14,14.35,'20m'],[18.068,18.168,'17m'],
+  [21,21.45,'15m'],[24.89,24.99,'12m'],[28,29.7,'10m'],[50,54,'6m'],[144,148,'2m'],[420,450,'70cm']];
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const titleCase = s => String(s || '').toLowerCase().replace(/(^|[\s\-'"(])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
+
+/* ================= Estado ================= */
+let state = null;        // todo lo que se guarda en localStorage
+let bgImg = null;        // Image del fondo
+let sel = 0;             // elemento seleccionado
+let bounds = [];         // cajas de los elementos en la vista previa
+let drag = null;
+let logos = [];          // nombres de archivo en logos/ (servidor)
+const imgCache = {};     // src -> Image ya cargada
+
+function defaultElements() {
+  return [
+    { id:'mycall', label:'Mi indicativo', type:'text', text:'{MI_INDICATIVO}', x:60, y:40, size:140, font:'Readex Pro', bold:true, color:'#ffffff', stroke:4, strokeColor:'#000000', align:'left', visible:true },
+    { id:'station', label:'Datos de estación', type:'text', text:'{MI_NOMBRE}\n{MI_QTH}, {MI_PAIS}\nGrid {MI_GRID} · CQ {CQ} · ITU {ITU}\nRig: {RIG}  ·  Ant: {ANTENA}  ·  {POTENCIA} W\n{EXTRA}', x:64, y:190, size:28, font:'Readex Pro', bold:true, color:'#b7d1d7', stroke:3, strokeColor:'#174763', align:'left', visible:true },
+    { id:'to', label:'Para (QSO con)', type:'text', text:'QSO con: {CALL}', x:1180, y:440, size:56, font:'Stylish', bold:true, color:'#b7d1d7', stroke:4, strokeColor:'#174763', align:'right', visible:true },
+    { id:'table', label:'Tabla del QSO', type:'table', x:60, y:560, width:1120, size:28, font:'Stylish', bold:true, color:'#111111', headColor:'#555555', bg:'#ffffff', bgAlpha:0.85, cols:['date','time','freq','band','mode','rst'], visible:true },
+    { id:'footer', label:'Pie', type:'text', text:'Gracias · 73!', x:1180, y:720, size:34, font:'Shalimar', bold:false, color:'#ffffff', stroke:3, strokeColor:'#000000', align:'right', visible:true },
+  ];
+}
+
+function defaultState(call) {
+  return {
+    call,
+    station: { call, name:'', qth:'', country:'', grid:'', cq:'', itu:'', rig:'', ant:'', pwr:'', extra:'', dateFmt:'ymd' },
+    elements: defaultElements(),
+    qsos: [], fileName: '', preview: 0,
+    qrz: { session:'', remember:true, cache:{} },
+    mail: {
+      user:'', pass:'', rememberPass:true, fromName:call, format:'jpg', group:true, skipSent:true,
+      subject:'QSL {MI_INDICATIVO} - {CALL} - {FECHA}',
+      body:'Hola {NOMBRE},\n\nMuchas gracias por el contacto. Adjunto mi QSL electrónica confirmando:\n\n{QSOS}\n\nEspero volver a encontrarte en las bandas.\n\n73 de {MI_INDICATIVO}\n{MI_NOMBRE}\n{MI_QTH}, {MI_PAIS}',
+    },
+    bg: null,
+    icons: [],   // iconos personales: { id, name, src (dataURL) }
+  };
+}
+
+// Todo se guarda en localStorage de este navegador (persiste al cerrar y volver a abrir la página).
+const key = c => 'qslapp:' + c;
+let saveTimer;
+function persist() {
+  clearTimeout(saveTimer);
+  if (!state) return;
+  // Si el usuario no quiere recordarlos, el Session ID y la contraseña quedan solo en memoria
+  const data = {
+    ...state,
+    qrz: { ...state.qrz, session: state.qrz.remember ? state.qrz.session : '' },
+    mail: { ...state.mail, pass: state.mail.rememberPass ? state.mail.pass : '' },
+  };
+  try {
+    localStorage.setItem(key(state.call), JSON.stringify(data));
+    $('#saveInfo').textContent = 'Datos guardados en este navegador';
+  } catch (e) {
+    // Si la imagen de fondo no cabe, guardamos el resto
+    try { localStorage.setItem(key(state.call), JSON.stringify({ ...data, bg:null })); } catch {}
+    $('#saveInfo').textContent = '⚠ Fondo demasiado grande para guardarlo (se perderá al recargar)';
+  }
+}
+function save() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(persist, 300);
+}
+
+function login(call) {
+  call = call.trim().toUpperCase();
+  if (!/^[A-Z0-9\/]{3,15}$/.test(call)) { alert('Indicativo no válido'); return; }
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(key(call))); localStorage.setItem('qslapp:last', call); } catch {}
+  const d = defaultState(call);
+  state = saved ? { ...d, ...saved, station:{...d.station, ...saved.station}, qrz:{...d.qrz, ...saved.qrz}, mail:{...d.mail, ...saved.mail} } : d;
+  sel = 0;
+  $('#hdrCall').textContent = call;
+  $('#login').style.display = 'none';
+  loadBg(state.bg);
+  bindForm(); renderElList(); renderEditor(); renderTable(); draw();
+}
+
+/* ================= ADIF ================= */
+function parseADIF(buf) {
+  // Se recorre como latin1 (1 byte = 1 carácter) porque las longitudes del ADIF son en bytes;
+  // luego cada valor se decodifica como UTF-8 si es válido.
+  const bytes = new Uint8Array(buf);
+  let text = '';
+  for (let i = 0; i < bytes.length; i += 8192) text += String.fromCharCode.apply(null, bytes.subarray(i, i + 8192));
+  const utf8 = new TextDecoder('utf-8', { fatal:true });
+  const decode = s => { try { return utf8.decode(Uint8Array.from(s, c => c.charCodeAt(0))); } catch { return s; } };
+  let start = 0;
+  const eoh = text.search(/<eoh>/i);
+  if (eoh >= 0) start = eoh + 5;
+  else if (text[0] !== '<') start = text.indexOf('<');
+  const re = /<([A-Za-z0-9_]+)(?::(\d+)(?::[^>]*)?)?>/g;
+  re.lastIndex = Math.max(0, start);
+  const recs = []; let cur = {}; let m;
+  while ((m = re.exec(text))) {
+    const name = m[1].toLowerCase();
+    if (name === 'eor') { if (Object.keys(cur).length) recs.push(cur); cur = {}; continue; }
+    if (m[2] !== undefined) {
+      const len = +m[2];
+      cur[name] = decode(text.substr(re.lastIndex, len)).trim();
+      re.lastIndex += len;
+    }
+  }
+  if (cur.call) recs.push(cur);
+  return recs.filter(r => r.call);
+}
+
+async function loadAdif(file) {
+  const recs = parseADIF(await file.arrayBuffer());
+  if (!recs.length) { alert('No se encontraron contactos en el archivo.'); return; }
+  state.qsos = recs.map((r, i) => ({ ...r, call:r.call.toUpperCase(), _id:i, _sel:true, _status:'' }));
+  state.fileName = file.name; state.preview = 0;
+  // Completa datos de mi estación con lo que traiga el ADIF, sin sobrescribir lo ya escrito
+  const f = recs[0], s = state.station;
+  s.grid ||= (f.my_gridsquare || '').toUpperCase();
+  s.country ||= titleCase(f.my_country || f.my_cnty || '');
+  s.qth ||= titleCase(f.my_city || '');
+  s.name ||= titleCase(f.my_name || '');
+  s.cq ||= f.my_cq_zone || ''; s.itu ||= f.my_itu_zone || '';
+  s.rig ||= f.my_rig || ''; s.ant ||= f.my_antenna || '';
+  bindForm(); renderTable(); draw(); save();
+  const nMail = state.qsos.filter(adifEmail).length, nName = state.qsos.filter(adifName).length;
+  const extra = [nName && `${nName} con nombre`, nMail && `${nMail} con correo`].filter(Boolean).join(', ');
+  log(`Cargados ${recs.length} contactos de ${file.name}${extra ? ` (${extra} en el ADIF)` : ''}`, 'ok');
+}
+
+/* ================= Variables ================= */
+function fmtDate(d, fmt) {
+  if (!/^\d{8}$/.test(d || '')) return d || '';
+  const y = d.slice(0,4), mo = d.slice(4,6), da = d.slice(6,8);
+  return { ymd:`${y}-${mo}-${da}`, dmy:`${da}/${mo}/${y}`, dMy:`${da}-${MONTHS[+mo-1]}-${y}`, mdy:`${mo}/${da}/${y}` }[fmt] || `${y}-${mo}-${da}`;
+}
+const fmtTime = t => (t && t.length >= 4) ? `${t.slice(0,2)}:${t.slice(2,4)}` : (t || '');
+// Frecuencia en MHz redondeada a 3 decimales (28.4514 -> 28.451)
+const fmtFreq = f => { const n = parseFloat(f); return isFinite(n) ? n.toFixed(3) : (f || ''); };
+function bandOf(q) {
+  if (q.band) return q.band.toLowerCase();
+  const f = parseFloat(q.freq);
+  const b = BANDS.find(([lo, hi]) => f >= lo && f <= hi);
+  return b ? b[2] : '';
+}
+const modeOf = q => (q.submode || q.mode || '').toUpperCase();
+
+function qrzName(q, full) {
+  const c = state.qrz.cache[q.call];
+  if (c && (c.fname || c.name)) return full ? titleCase(`${c.fname} ${c.name}`.trim()) : titleCase((c.fname || c.name).split(/\s+/)[0]);
+  const n = adifName(q);
+  if (n) return full ? titleCase(n) : titleCase(n.replace(/["“”].*?["“”]/g, '').trim().split(/\s+/)[0]);
+  return q.call;
+}
+
+// Nombre del ADIF: NAME_INTL (admite tildes y ñ) o NAME
+const adifName = q => String(q.name_intl || q.name || '').trim();
+const hasQrzName = q => { const c = state.qrz.cache[q.call]; return !!(c && (c.fname || c.name)); };
+// Correo del campo EMAIL del ADIF (puede venir como "Nombre <a@b.com>" o con varias direcciones: se toma la primera)
+const adifEmail = q => (String(q.email || '').match(/[^\s<>"',;:]+@[^\s<>"',;:]+\.[A-Za-z]{2,}/) || [''])[0];
+// Correo de destino: el de QRZ si se consultó y lo trae; si no, el del ADIF
+const emailOf = q => state.qrz.cache[q.call]?.email || adifEmail(q);
+
+function qsoLine(q) {
+  const s = state.station;
+  return `- ${q.call} · ${fmtDate(q.qso_date, s.dateFmt)} ${fmtTime(q.time_on)} UTC · ${q.freq ? fmtFreq(q.freq) + ' MHz · ' : ''}${bandOf(q)} · ${modeOf(q)} · RST ${q.rst_sent || ''}`;
+}
+
+function vars(q, group) {
+  const s = state.station, c = state.qrz.cache[q.call] || {};
+  return {
+    MI_INDICATIVO: (s.call || state.call).toUpperCase(), MI_NOMBRE: s.name, MI_QTH: s.qth, MI_PAIS: s.country,
+    MI_GRID: s.grid, CQ: s.cq, ITU: s.itu, RIG: s.rig, ANTENA: s.ant, POTENCIA: s.pwr || q.tx_pwr || '', EXTRA: s.extra,
+    CALL: q.call, NOMBRE: qrzName(q, false), NOMBRE_COMPLETO: qrzName(q, true),
+    FECHA: fmtDate(q.qso_date, s.dateFmt), HORA: fmtTime(q.time_on), FREQ: fmtFreq(q.freq), BANDA: bandOf(q), MODO: modeOf(q),
+    RST_ENV: q.rst_sent || '', RST_REC: q.rst_rcvd || '',
+    QTH: titleCase(c.addr2 || q.qth || ''), GRID: (c.grid || q.gridsquare || '').toUpperCase(), PAIS: titleCase(c.country || q.country || ''),
+    QSOS: (group || [q]).map(qsoLine).join('\n'),
+  };
+}
+
+// Reemplaza {VAR}. Con dropEmpty (textos de la QSL) quita los tramos separados por "·", "|" o ","
+// cuyas variables quedaron todas vacías, y las líneas que quedan sin contenido.
+function fill(tpl, v, dropEmpty) {
+  const sub = s => {
+    let n = 0, empty = 0;
+    const out = s.replace(/\{(\w+)\}/g, (m, k) => {
+      if (!(k in v)) return m;
+      n++; if (!String(v[k]).trim()) empty++;
+      return v[k];
+    });
+    return { out, blank: n > 0 && n === empty };
+  };
+  return String(tpl).split('\n').map(line => {
+    if (!dropEmpty) return sub(line).out;
+    const parts = line.split(/(\s*[·|,]\s*)/), segs = [];
+    for (let i = 0; i < parts.length; i += 2) {
+      const r = sub(parts[i]);
+      if (!r.blank) segs.push((segs.length ? parts[i - 1] || '' : '') + r.out);
+    }
+    return segs.length ? segs.join('') : null;
+  }).filter(l => l !== null).join('\n');
+}
+
+/* ================= Render de la QSL ================= */
+const SAMPLE = { call:'HK4ZZZ', qso_date:'20250222', time_on:'202805', freq:'28.4514', band:'10m', mode:'SSB', rst_sent:'59', rst_rcvd:'59', name:'Alejandro "Alex" NAZRA', qth:'NEUQUEN', gridsquare:'FF51wc', country:'ARGENTINA' };
+
+function loadBg(src) {
+  bgImg = null;
+  if (!src) { draw(); return; }
+  const img = new Image();
+  img.onload = () => { bgImg = img; draw(); };
+  img.src = src;
+}
+
+function drawBg(ctx) {
+  if (bgImg) { ctx.drawImage(bgImg, 0, 0, W, H); return; }
+  const g = ctx.createLinearGradient(0, 0, W, H);
+  g.addColorStop(0, '#0b3a5b'); g.addColorStop(1, '#091521');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.strokeStyle = 'rgba(255,255,255,.05)'; ctx.lineWidth = 1;
+  for (let x = 0; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  for (let y = 0; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+}
+
+const fontStr = (el, size, bold) => `${bold ? 'bold ' : ''}${size}px "${el.font}", sans-serif`;
+
+function hexA(hex, a) {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+
+function drawText(ctx, el, v) {
+  const lines = fill(el.text, v, true).split('\n');
+  const lh = el.size * 1.22;
+  ctx.font = fontStr(el, el.size, el.bold);
+  ctx.textAlign = el.align; ctx.textBaseline = 'top';
+  ctx.lineJoin = 'round';
+  let w = 0;
+  lines.forEach((ln, i) => {
+    const y = el.y + i * lh;
+    if (el.stroke > 0) { ctx.lineWidth = el.stroke * 2; ctx.strokeStyle = el.strokeColor; ctx.strokeText(ln, el.x, y); }
+    ctx.fillStyle = el.color; ctx.fillText(ln, el.x, y);
+    w = Math.max(w, ctx.measureText(ln).width);
+  });
+  const x0 = el.align === 'center' ? el.x - w / 2 : el.align === 'right' ? el.x - w : el.x;
+  return { x0, y0: el.y, x1: x0 + Math.max(w, 20), y1: el.y + Math.max(lines.length, 1) * lh };
+}
+
+function drawTable(ctx, el, v) {
+  const cols = el.cols.length ? el.cols : ['date'];
+  const vals = { call:v.CALL, date:v.FECHA, time:v.HORA, freq:v.FREQ ? `${v.FREQ} MHz` : '', band:v.BANDA, mode:v.MODO, rst:v.RST_ENV, rstr:v.RST_REC };
+  const hh = el.size * 0.75, pad = el.size * 0.20;
+  const h = pad + hh * 1.1 + el.size * 1.1 + pad;
+  ctx.fillStyle = hexA(el.bg, el.bgAlpha);
+  roundRect(ctx, el.x, el.y, el.width, h, 14); ctx.fill();
+  const cw = el.width / cols.length;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  cols.forEach((k, i) => {
+    const cx = el.x + cw * i + cw / 2;
+    ctx.font = fontStr(el, hh, false); ctx.fillStyle = el.headColor;
+    ctx.fillText(COLS[k].toUpperCase(), cx, el.y + pad);
+    ctx.font = fontStr(el, el.size, el.bold); ctx.fillStyle = el.color;
+    ctx.fillText(vals[k] || '—', cx, el.y + pad + hh * 1.3);
+    if (i) {
+      ctx.strokeStyle = hexA(el.headColor, 0.35); ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(el.x + cw * i, el.y + pad * 0.6); ctx.lineTo(el.x + cw * i, el.y + h - pad * 0.6); ctx.stroke();
+    }
+  });
+  return { x0: el.x, y0: el.y, x1: el.x + el.width, y1: el.y + h };
+}
+
+/* --- Imágenes (logos e iconos) --- */
+// Los logos se guardan como "logos/archivo.png"; los iconos personales como "icon:<id>" (el dataURL vive en state.icons).
+const srcOf = el => el.src.startsWith('icon:') ? (state.icons.find(i => 'icon:' + i.id === el.src) || {}).src : el.src;
+function getImg(src) {
+  if (!src) return null;
+  let im = imgCache[src];
+  if (!im) { im = imgCache[src] = new Image(); im.onload = () => draw(); im.src = src; }
+  return im.complete && im.naturalWidth ? im : null;
+}
+// Espera a que todas las imágenes visibles estén cargadas antes de exportar
+const ensureImages = () => Promise.all(state.elements.filter(el => el.type === 'image' && el.visible).map(el => {
+  const src = srcOf(el); if (!src) return null;
+  getImg(src); return imgCache[src].decode().catch(() => {});
+}));
+const imgH = (el, im) => im ? el.w * im.naturalHeight / im.naturalWidth : el.w;
+
+function drawImageEl(ctx, el) {
+  const im = getImg(srcOf(el)), h = imgH(el, im);
+  if (im) { ctx.save(); ctx.globalAlpha = el.opacity; ctx.drawImage(im, el.x, el.y, el.w, h); ctx.restore(); }
+  return { x0: el.x, y0: el.y, x1: el.x + el.w, y1: el.y + h };
+}
+
+// Primero las imágenes (justo encima del fondo), luego textos y tabla
+const drawOrder = () => {
+  const idx = state.elements.map((_, i) => i);
+  return [...idx.filter(i => state.elements[i].type === 'image'), ...idx.filter(i => state.elements[i].type !== 'image')];
+};
+
+function render(ctx, q, showSel) {
+  ctx.clearRect(0, 0, W, H);
+  drawBg(ctx);
+  const v = vars(q), b = [];
+  for (const i of drawOrder()) {
+    const el = state.elements[i];
+    b[i] = !el.visible ? null : el.type === 'image' ? drawImageEl(ctx, el) : el.type === 'table' ? drawTable(ctx, el, v) : drawText(ctx, el, v);
+  }
+  if (showSel && b[sel]) {
+    const r = b[sel];
+    ctx.save(); ctx.setLineDash([10, 6]); ctx.lineWidth = 2; ctx.strokeStyle = '#f59e0b';
+    ctx.strokeRect(r.x0 - 6, r.y0 - 6, r.x1 - r.x0 + 12, r.y1 - r.y0 + 12);
+    if (state.elements[sel].type === 'image') {   // asa para redimensionar
+      ctx.setLineDash([]); ctx.fillStyle = '#f59e0b'; ctx.fillRect(r.x1 - 2, r.y1 - 2, 16, 16);
+    }
+    ctx.restore();
+  }
+  return b;
+}
+
+const previewQso = () => state.qsos[state.preview] || state.qsos[0] || SAMPLE;
+const pctx = $('#preview').getContext('2d');
+function draw() {
+  if (!state) return;
+  bounds = render(pctx, previewQso(), true);
+  const q = previewQso();
+  $('#prevInfo').textContent = q === SAMPLE ? '(contacto de ejemplo)' : `${q.call} · ${fmtDate(q.qso_date, state.station.dateFmt)} ${fmtTime(q.time_on)}`;
+}
+
+function qslCanvas(q) {
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  render(c.getContext('2d'), q, false);
+  return c;
+}
+const mime = () => state.mail.format === 'png' ? 'image/png' : 'image/jpeg';
+const qslName = q => `QSL_${state.station.call || state.call}_${q.call}_${q.qso_date || ''}_${(q.time_on || '').slice(0,4)}.${state.mail.format}`.replace(/\//g, '-');
+const qslBlob = async q => { await ensureImages(); return new Promise(r => qslCanvas(q).toBlob(r, mime(), 0.92)); };
+const qslBase64 = q => qslCanvas(q).toDataURL(mime(), 0.92).split(',')[1];
+
+function download(blob, name) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+/* ================= Arrastre en la vista previa ================= */
+const cv = $('#preview');
+function pt(e) { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height }; }
+function hit(p) {
+  for (const i of drawOrder().reverse()) { const b = bounds[i]; if (b && p.x >= b.x0 - 8 && p.x <= b.x1 + 8 && p.y >= b.y0 - 8 && p.y <= b.y1 + 8) return i; }
+  return -1;
+}
+// ¿Está el puntero sobre el asa de redimensionar de la imagen seleccionada?
+function onHandle(p) {
+  const el = state.elements[sel], b = bounds[sel];
+  return el && el.type === 'image' && b && p.x >= b.x1 - 10 && p.x <= b.x1 + 22 && p.y >= b.y1 - 10 && p.y <= b.y1 + 22;
+}
+cv.addEventListener('pointerdown', e => {
+  const p = pt(e);
+  if (onHandle(p)) { drag = { resize:true }; cv.setPointerCapture(e.pointerId); return; }
+  const i = hit(p);
+  if (i < 0) {   // clic en el fondo: quitar la selección y el resaltado
+    if (sel !== -1) { sel = -1; renderElList(); renderEditor(); draw(); }
+    return;
+  }
+  sel = i; const el = state.elements[i];
+  drag = { dx: p.x - el.x, dy: p.y - el.y };
+  cv.setPointerCapture(e.pointerId);
+  renderElList(); renderEditor(); draw();
+});
+cv.addEventListener('pointermove', e => {
+  const p = pt(e);
+  if (!drag) { cv.style.cursor = onHandle(p) ? 'nwse-resize' : hit(p) >= 0 ? 'move' : 'default'; return; }
+  const el = state.elements[sel];
+  if (drag.resize) el.w = Math.max(20, Math.round(p.x - el.x));
+  else { el.x = Math.round(p.x - drag.dx); el.y = Math.round(p.y - drag.dy); }
+  draw(); syncXY();
+});
+cv.addEventListener('pointerup', () => { if (drag) { drag = null; save(); } });
+
+// Supr / Retroceso desactiva el elemento seleccionado (salvo mientras se escribe en un campo).
+// Textos y tabla se ocultan (se reactivan con "Visible"); logos e iconos se quitan de la QSL,
+// igual que al desmarcarlos en su cuadrícula.
+const canDisable = el => el && el.visible === true;
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Delete' && e.key !== 'Backspace') return;
+  if (!state || e.target.closest?.('input, textarea, select, [contenteditable]')) return;
+  const el = state.elements[sel];
+  if (!canDisable(el)) return;
+  e.preventDefault();
+  if (el.type === 'image') {
+    state.elements.splice(sel, 1); sel = -1;
+    log(`"${el.label}" quitado de la QSL (vuelve a activarlo en la cuadrícula de logos/iconos)`, 'info');
+  } else {
+    el.visible = false;
+    log(`"${el.label}" desactivado (márcalo como "Visible" para mostrarlo de nuevo)`, 'info');
+  }
+  renderElList(); renderEditor(); draw(); save();
+});
+
+/* ================= Editor de elementos ================= */
+function renderElList() {
+  $('#elList').innerHTML = state.elements.map((el, i) =>
+    `<button data-i="${i}" class="${i === sel ? 'sel' : ''} ${el.visible ? '' : 'hidden'}">${el.type === 'image' ? '🖼 ' : ''}${esc(el.label)}</button>`).join('');
+  renderLogoGrids();
+}
+
+/* ================= Logos e iconos personales ================= */
+function renderLogoGrids() {
+  const on = new Set(state.elements.filter(el => el.type === 'image').map(el => el.src));
+  const cell = (src, thumb, name, rm) => `<div class="logo ${on.has(src) ? 'on' : ''}" data-src="${esc(src)}" title="${esc(name)}">
+    <img src="${esc(thumb)}" alt="${esc(name)}">${rm ? `<button class="icon" data-rm="${esc(rm)}" title="Eliminar icono" style="position:absolute;bottom:-4px;right:-4px;font-size:11px;background:var(--panel2);border-radius:50%;padding:0 4px">✕</button>` : ''}</div>`;
+  $('#logoGrid').innerHTML = logos.length
+    ? logos.map(n => cell('logos/' + encodeURIComponent(n), 'logos/' + encodeURIComponent(n), n.replace(/\.\w+$/, ''))).join('')
+    : '<span class="small muted">No hay logos (copia imágenes en la carpeta logos/ del servidor).</span>';
+  $('#myIconGrid').innerHTML = state.icons.map(ic => cell('icon:' + ic.id, ic.src, ic.name, ic.id)).join('');
+}
+
+function toggleImage(src, name) {
+  const idx = state.elements.findIndex(el => el.type === 'image' && el.src === src);
+  if (idx >= 0) { state.elements.splice(idx, 1); sel = -1; }
+  else addImage(src, name);
+  renderElList(); renderEditor(); draw(); save();
+}
+
+function addImage(src, name) {
+  // Coloca cada nueva imagen en la siguiente casilla libre de la esquina superior derecha
+  const n = state.elements.filter(el => el.type === 'image').length, w = 120;
+  state.elements.push({ id:'img' + Date.now(), label:name, type:'image', src, x:W - 60 - w - (n % 6) * 135, y:40 + Math.floor(n / 6) * 135, w, opacity:1, visible:true });
+  sel = state.elements.length - 1;
+}
+
+function gridClick(e) {
+  const rm = e.target.closest('[data-rm]');
+  if (rm) {
+    const id = rm.dataset.rm;
+    state.icons = state.icons.filter(ic => ic.id !== id);
+    state.elements = state.elements.filter(el => el.src !== 'icon:' + id);
+    sel = -1; renderElList(); renderEditor(); draw(); save();
+    return;
+  }
+  const c = e.target.closest('.logo'); if (!c) return;
+  toggleImage(c.dataset.src, c.title);
+}
+$('#logoGrid').addEventListener('click', gridClick);
+$('#myIconGrid').addEventListener('click', gridClick);
+
+async function loadLogos() {
+  try { logos = (await (await fetch('/api/logos')).json()).logos || []; } catch { logos = []; }
+  if (state) renderLogoGrids();
+}
+
+// Los iconos personales se reducen a 500 px máx. y se guardan como PNG (conserva la transparencia)
+function addIconFile(file) {
+  const img = new Image();
+  img.onload = () => {
+    const s = Math.min(1, 500 / Math.max(img.width, img.height));
+    const c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(img.src);
+    const ic = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name: file.name.replace(/\.\w+$/, ''), src: c.toDataURL('image/png') };
+    state.icons.push(ic);
+    addImage('icon:' + ic.id, ic.name);
+    renderElList(); renderEditor(); draw(); save();
+  };
+  img.onerror = () => alert('No se pudo leer ' + file.name);
+  img.src = URL.createObjectURL(file);
+}
+$('#elList').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  sel = +b.dataset.i; renderElList(); renderEditor(); draw();
+});
+
+function renderEditor() {
+  const el = state.elements[sel];
+  if (!el) { $('#elEditor').innerHTML = '<p class="small muted" style="margin:4px 0">Ningún elemento seleccionado. Haz clic en uno de la vista previa o de la lista para editarlo.</p>'; return; }
+  const fontOpts = FONTS.map(f => `<option ${f === el.font ? 'selected' : ''}>${f}</option>`).join('');
+  let h = `<div class="row"><div><label>Nombre del elemento</label><input type="text" data-e="label" value="${esc(el.label)}"></div>
+    <label class="inline auto" style="margin-bottom:8px"><input type="checkbox" data-e="visible" ${el.visible ? 'checked' : ''}> Visible</label></div>`;
+  if (el.type === 'image') {
+    $('#elEditor').innerHTML = h + `<div class="row">
+      <div><label>X</label><input type="number" data-e="x" value="${el.x}"></div>
+      <div><label>Y</label><input type="number" data-e="y" value="${el.y}"></div>
+      <div><label>Ancho</label><input type="number" data-e="w" min="20" max="1240" value="${el.w}"></div>
+      <div><label>Opacidad</label><input type="number" data-e="opacity" min="0" max="1" step="0.05" value="${el.opacity}"></div>
+    </div><button id="delEl" style="margin-top:8px">Quitar de la QSL</button>`;
+    return;
+  }
+  if (el.type === 'text') h += `<label>Texto</label><textarea data-e="text" rows="4">${esc(el.text)}</textarea>`;
+  h += `<div class="row">
+      <div><label>X</label><input type="number" data-e="x" value="${el.x}"></div>
+      <div><label>Y</label><input type="number" data-e="y" value="${el.y}"></div>
+      <div><label>Tamaño</label><input type="number" data-e="size" min="8" max="400" value="${el.size}"></div>
+      ${el.type === 'table' ? `<div><label>Ancho</label><input type="number" data-e="width" value="${el.width}"></div>` : ''}
+    </div>
+    <div class="row">
+      <div><label>Fuente</label><select data-e="font">${fontOpts}</select></div>
+      ${el.type === 'text' ? `<div><label>Alineación</label><select data-e="align">
+        ${['left','center','right'].map(a => `<option value="${a}" ${a === el.align ? 'selected' : ''}>${{left:'Izquierda',center:'Centro',right:'Derecha'}[a]}</option>`).join('')}</select></div>` : ''}
+      <label class="inline auto" style="margin-bottom:8px"><input type="checkbox" data-e="bold" ${el.bold ? 'checked' : ''}> Negrita</label>
+    </div>
+    <div class="row">
+      <div class="auto"><label>Color</label><input type="color" data-e="color" value="${el.color}"></div>`;
+  if (el.type === 'text') h += `
+      <div class="auto"><label>Borde</label><input type="color" data-e="strokeColor" value="${el.strokeColor}"></div>
+      <div><label>Grosor borde</label><input type="number" data-e="stroke" min="0" max="20" value="${el.stroke}"></div>
+    </div>`;
+  else h += `
+      <div class="auto"><label>Títulos</label><input type="color" data-e="headColor" value="${el.headColor}"></div>
+      <div class="auto"><label>Fondo</label><input type="color" data-e="bg" value="${el.bg}"></div>
+      <div><label>Opacidad fondo</label><input type="number" data-e="bgAlpha" min="0" max="1" step="0.05" value="${el.bgAlpha}"></div>
+    </div>
+    <label>Columnas</label>
+    <div class="chips">${Object.entries(COLS).map(([k, t]) =>
+      `<label class="inline" style="margin:0 8px 0 0"><input type="checkbox" data-col="${k}" ${el.cols.includes(k) ? 'checked' : ''}>${t}</label>`).join('')}</div>`;
+  if (el.id.startsWith('custom')) h += `<button id="delEl" style="margin-top:8px">Eliminar elemento</button>`;
+  $('#elEditor').innerHTML = h;
+}
+function syncXY() {
+  const el = state.elements[sel];
+  const x = $('#elEditor [data-e=x]'), y = $('#elEditor [data-e=y]'), w = $('#elEditor [data-e=w]');
+  if (x) x.value = el.x; if (y) y.value = el.y; if (w) w.value = el.w;
+}
+$('#elEditor').addEventListener('input', e => {
+  const el = state.elements[sel], t = e.target;
+  if (t.dataset.col) {
+    el.cols = Object.keys(COLS).filter(k => $(`#elEditor [data-col=${k}]`).checked);
+  } else if (t.dataset.e) {
+    const k = t.dataset.e;
+    el[k] = t.type === 'checkbox' ? t.checked : t.type === 'number' ? +t.value : t.value;
+    if (k === 'font') document.fonts.load(`40px "${el.font}"`).then(draw);
+    if (k === 'label' || k === 'visible') renderElList();
+  }
+  draw(); save();
+});
+$('#elEditor').addEventListener('click', e => {
+  if (e.target.id !== 'delEl') return;
+  state.elements.splice(sel, 1); sel = -1; renderElList(); renderEditor(); draw(); save();
+});
+dropZoneMulti($('#iconDrop'), $('#iconFile'), addIconFile);
+$('#addText').onclick = () => {
+  state.elements.push({ id:'custom' + Date.now(), label:'Texto', type:'text', text:'Nuevo texto', x:W/2, y:H/2, size:40, font:'Oswald', bold:false, color:'#ffffff', stroke:3, strokeColor:'#000000', align:'center', visible:true });
+  sel = state.elements.length - 1; renderElList(); renderEditor(); draw(); save();
+};
+$('#resetLayout').onclick = () => {
+  if (!confirm('¿Restablecer los textos y la tabla al diseño original? (los logos e iconos se conservan)')) return;
+  state.elements = [...defaultElements(), ...state.elements.filter(el => el.type === 'image')]; sel = 0; renderElList(); renderEditor(); draw(); save();
+};
+
+// Variables: insertar en el textarea/campo enfocado por última vez
+let lastField = null;
+document.addEventListener('focusin', e => { if (e.target.matches('textarea, input[type=text]')) lastField = e.target; });
+$('#chips').innerHTML = VARS.map(v => `<span class="chip" data-v="{${v}}">{${v}}</span>`).join('');
+$('#chips').addEventListener('mousedown', e => e.preventDefault());
+$('#chips').addEventListener('click', e => {
+  const c = e.target.closest('.chip'); if (!c || !lastField) return;
+  const f = lastField, s = f.selectionStart ?? f.value.length;
+  f.value = f.value.slice(0, s) + c.dataset.v + f.value.slice(f.selectionEnd ?? s);
+  f.selectionStart = f.selectionEnd = s + c.dataset.v.length;
+  f.dispatchEvent(new Event('input', { bubbles:true })); f.focus();
+});
+
+/* ================= Formularios enlazados (data-k="a.b") ================= */
+function bindForm() {
+  document.querySelectorAll('[data-k]').forEach(f => {
+    const [a, b] = f.dataset.k.split('.');
+    const v = state[a][b];
+    if (f.type === 'checkbox') f.checked = !!v; else f.value = v ?? '';
+  });
+}
+document.addEventListener('input', e => {
+  const f = e.target; if (!f.dataset || !f.dataset.k || !state) return;
+  const [a, b] = f.dataset.k.split('.');
+  state[a][b] = f.type === 'checkbox' ? f.checked : (f.dataset.k === 'station.call' ? f.value.toUpperCase() : f.value);
+  if (a === 'station') draw();
+  save();
+});
+
+/* ================= Tabla de contactos ================= */
+function visibleQsos() {
+  const f = $('#filter').value.trim().toUpperCase();
+  return state.qsos.filter(q => !f || q.call.includes(f) || modeOf(q).includes(f) || bandOf(q).toUpperCase().includes(f));
+}
+function renderTable() {
+  const list = visibleQsos();
+  const n = state.qsos.filter(q => q._sel).length;
+  $('#qsoCount').textContent = state.qsos.length ? `${state.qsos.length} contactos · ${n} seleccionados${state.fileName ? ' · ' + state.fileName : ''}` : '';
+  $('#adifInfo').textContent = state.fileName ? `${state.fileName}: ${state.qsos.length} contactos` : '';
+  $('#selAll').checked = list.length > 0 && list.every(q => q._sel);
+  if (!state.qsos.length) { $('#qsoBody').innerHTML = '<tr><td colspan="12" class="muted">Carga un archivo ADIF para ver los contactos.</td></tr>'; return; }
+  $('#qsoBody').innerHTML = list.map(q => {
+    const c = state.qrz.cache[q.call];
+    const st = q._status || '';
+    const cls = st.startsWith('✓') ? 'st-ok' : st.startsWith('✗') ? 'st-err' : 'st-info';
+    return `<tr data-id="${q._id}" class="${q._id === previewQso()._id ? 'active' : ''}">
+      <td><input type="checkbox" data-sel ${q._sel ? 'checked' : ''}></td>
+      <td><b>${esc(q.call)}</b></td><td>${esc(fmtDate(q.qso_date, state.station.dateFmt))}</td><td>${esc(fmtTime(q.time_on))}</td>
+      <td>${esc(fmtFreq(q.freq))}</td><td>${esc(bandOf(q))}</td><td>${esc(modeOf(q))}</td><td>${esc(q.rst_sent || '')}/${esc(q.rst_rcvd || '')}</td>
+      <td>${hasQrzName(q) ? esc(qrzName(q, true)) : adifName(q) ? esc(qrzName(q, true)) + ' <span class="muted small">(ADIF)</span>' : '<span class="muted">—</span>'}</td>
+      <td>${emailOf(q) ? esc(emailOf(q)) + (c?.email ? '' : ' <span class="muted small">(ADIF)</span>') : c ? '<span class="muted">sin correo</span>' : '<span class="muted">—</span>'}</td>
+      <td class="${cls}">${esc(st)}</td>
+      <td><button class="icon" data-dl title="Descargar QSL">⬇</button></td></tr>`;
+  }).join('');
+}
+$('#qsoBody').addEventListener('click', async e => {
+  const tr = e.target.closest('tr[data-id]'); if (!tr) return;
+  const q = state.qsos.find(x => x._id === +tr.dataset.id);
+  if (e.target.matches('[data-sel]')) { q._sel = e.target.checked; renderTable(); save(); return; }
+  if (e.target.matches('[data-dl]')) { download(await qslBlob(q), qslName(q)); return; }
+  state.preview = state.qsos.indexOf(q); renderTable(); draw(); save();
+});
+$('#selAll').onchange = e => { visibleQsos().forEach(q => q._sel = e.target.checked); renderTable(); save(); };
+$('#filter').oninput = renderTable;
+
+$('#dlOne').onclick = async () => { const q = previewQso(); download(await qslBlob(q), qslName(q)); };
+// El portapapeles solo admite PNG y solo funciona en contexto seguro (https o localhost)
+$('#copyOne').onclick = async () => {
+  if (!window.isSecureContext || !navigator.clipboard || !window.ClipboardItem)
+    return alert('Tu navegador no permite copiar imágenes desde esta dirección.\nAbre la app en http://localhost:8000 (o por https), o usa "Descargar esta QSL".');
+  const btn = $('#copyOne'), label = btn.textContent;
+  try {
+    // Se pasa la promesa directamente a ClipboardItem para que Safari conserve el permiso del clic
+    const png = ensureImages().then(() => new Promise(r => qslCanvas(previewQso()).toBlob(r, 'image/png')));
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
+    btn.textContent = '✓ Copiada'; log(`QSL de ${previewQso().call} copiada al portapapeles`, 'ok');
+  } catch (e) {
+    btn.textContent = '✗ No se pudo copiar'; log('Portapapeles: ' + e.message, 'err');
+  }
+  setTimeout(() => btn.textContent = label, 1800);
+};
+$('#dlZip').onclick = async () => {
+  const list = state.qsos.filter(q => q._sel);
+  if (!list.length) return alert('No hay contactos seleccionados.');
+  if (!window.JSZip) return alert('No se pudo cargar JSZip (revisa la conexión a internet).');
+  const zip = new JSZip();
+  for (const q of list) { zip.file(qslName(q), await qslBlob(q)); await sleep(0); }
+  download(await zip.generateAsync({ type:'blob' }), `QSL_${state.station.call || state.call}.zip`);
+  log(`ZIP generado con ${list.length} QSL`, 'ok');
+};
+
+/* ================= Log ================= */
+function log(msg, type) {
+  const d = document.createElement('div');
+  d.className = type ? 'st-' + type : '';
+  d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  $('#log').prepend(d);
+}
+function progress(id, frac) {
+  const p = $(id); p.style.display = frac === null ? 'none' : 'block';
+  p.firstElementChild.style.width = ((frac || 0) * 100) + '%';
+}
+
+async function api(path, body) {
+  const r = await fetch(path, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(body) });
+  let j; try { j = await r.json(); } catch { throw new Error(`Servidor respondió ${r.status}`); }
+  if (!r.ok) throw new Error(j.error || `Error ${r.status}`);
+  return j;
+}
+
+/* ================= QRZ ================= */
+function parseQRZ(raw) {
+  raw = String(raw || '').trim();
+  if (raw.startsWith('{')) {   // por si el servicio responde JSON
+    const j = JSON.parse(raw), db = j.QRZDatabase || j;
+    const c = db.Callsign || {}, s = db.Session || {};
+    return { error: s.Error || '', data: c.call ? { call:c.call, fname:c.fname || '', name:c.name || '', email:c.email || '', addr2:c.addr2 || '', country:c.country || '', grid:c.grid || '' } : null };
+  }
+  const doc = new DOMParser().parseFromString(raw, 'application/xml');
+  const get = (p, t) => { const n = p && p.getElementsByTagName(t)[0]; return n ? n.textContent.trim() : ''; };
+  const s = doc.getElementsByTagName('Session')[0];
+  const c = doc.getElementsByTagName('Callsign')[0];
+  return { error: get(s, 'Error'), data: c ? { call:get(c,'call'), fname:get(c,'fname'), name:get(c,'name'), email:get(c,'email'), addr2:get(c,'addr2'), country:get(c,'country'), grid:get(c,'grid') } : null };
+}
+
+async function qrzLookup(call) {
+  const session = state.qrz.session.trim();
+  let r = parseQRZ((await api('/api/qrz', { session, callsign:call })).raw);
+  if (!r.data && call.includes('/') && !/session|invalid/i.test(r.error)) {
+    // Prefijos/sufijos portables: probar con la parte más larga (EA8/LU7YZ/P -> LU7YZ)
+    const base = call.split('/').sort((a, b) => b.length - a.length)[0];
+    r = parseQRZ((await api('/api/qrz', { session, callsign:base })).raw);
+  }
+  return r;
+}
+
+$('#qrzBtn').onclick = async () => {
+  const selected = state.qsos.filter(q => q._sel);
+  if (!selected.length) return alert('No hay contactos seleccionados.');
+  // Los indicativos que ya traen correo en el ADIF no necesitan consulta
+  const withMail = new Set(selected.filter(adifEmail).map(q => q.call));
+  const calls = [...new Set(selected.map(q => q.call))].filter(c => !withMail.has(c));
+  if (withMail.size) log(`QRZ: ${withMail.size} indicativo(s) omitidos porque ya tienen correo en el ADIF`, 'info');
+  if (!calls.length) return alert('Todos los contactos seleccionados ya tienen correo en el ADIF; no hace falta consultar QRZ.');
+  if (!state.qrz.session.trim()) return alert('Ingresa el Session ID de QRZ.');
+  $('#qrzBtn').disabled = true;
+  let ok = 0;
+  try {
+    for (let i = 0; i < calls.length; i++) {
+      progress('#qrzProg', i / calls.length);
+      const call = calls[i];
+      try {
+        const r = await qrzLookup(call);
+        if (r.data) {
+          state.qrz.cache[call] = r.data; ok++;
+          log(`QRZ ${call}: ${titleCase(r.data.fname + ' ' + r.data.name)}${r.data.email ? ' <' + r.data.email + '>' : ' (sin correo)'}`, r.data.email ? 'ok' : 'info');
+        } else {
+          log(`QRZ ${call}: ${r.error || 'sin datos'}`, 'err');
+          if (/session|invalid|timeout|password|not authorized/i.test(r.error)) { alert('QRZ: ' + r.error + '\nRevisa el Session ID.'); break; }
+        }
+      } catch (e) { log(`QRZ ${call}: ${e.message}`, 'err'); if (/fetch/i.test(e.message)) { alert('No se pudo contactar al servidor local. ¿Está corriendo server.py?'); break; } }
+      renderTable(); save();
+      await sleep(250);
+    }
+  } finally {
+    progress('#qrzProg', null); $('#qrzBtn').disabled = false; draw();
+    log(`Consulta QRZ terminada: ${ok}/${calls.length} encontrados`, 'ok');
+  }
+};
+$('#qrzClear').onclick = () => { state.qrz.cache = {}; renderTable(); draw(); save(); };
+
+/* ================= Correo ================= */
+$('#mailTest').onclick = async () => {
+  if (!state.mail.user || !state.mail.pass) return alert('Escribe la cuenta Gmail y la contraseña de aplicación.');
+  $('#mailTest').disabled = true;
+  try { await api('/api/verify', { user:state.mail.user, pass:state.mail.pass }); log('Conexión con Gmail correcta', 'ok'); alert('✓ Conexión con Gmail correcta'); }
+  catch (e) { log('Gmail: ' + e.message, 'err'); alert('Gmail: ' + e.message); }
+  finally { $('#mailTest').disabled = false; }
+};
+
+$('#sendBtn').onclick = async () => {
+  const m = state.mail;
+  if (!m.user || !m.pass) return alert('Escribe la cuenta Gmail y la contraseña de aplicación.');
+  let list = state.qsos.filter(q => q._sel && emailOf(q));
+  if (m.skipSent) list = list.filter(q => !String(q._status).startsWith('✓'));
+  const noMail = state.qsos.filter(q => q._sel && !emailOf(q)).length;
+  if (!list.length) return alert('Ningún contacto seleccionado tiene correo (ni en el ADIF ni en QRZ). Consulta primero QRZ.' + (noMail ? `\n(${noMail} seleccionados sin correo)` : ''));
+  // Agrupar por indicativo o un correo por QSO
+  const groups = m.group ? Object.values(list.reduce((g, q) => ((g[q.call] ||= []).push(q), g), {})) : list.map(q => [q]);
+  if (!confirm(`Se enviarán ${groups.length} correo(s) con ${list.length} QSL desde ${m.user}.${noMail ? `\n${noMail} seleccionados no tienen correo y se omitirán.` : ''}\n\n¿Continuar?`)) return;
+
+  $('#sendBtn').disabled = true;
+  await ensureImages();
+  let ok = 0;
+  try {
+    for (let i = 0; i < groups.length; i++) {
+      progress('#sendProg', i / groups.length);
+      const g = groups[i], q = g[0], v = vars(q, g), to = g.map(emailOf).find(Boolean);
+      g.forEach(x => x._status = 'Enviando…'); renderTable();
+      try {
+        await api('/api/send', {
+          user:m.user, pass:m.pass, fromName:fill(m.fromName, v), to,
+          subject:fill(m.subject, v), text:fill(m.body, v),
+          attachments:g.map(x => ({ filename:qslName(x), mime:mime(), data:qslBase64(x) })),
+        });
+        g.forEach(x => x._status = '✓ Enviado'); ok++;
+        log(`Enviado a ${q.call} <${to}> (${g.length} QSL)`, 'ok');
+      } catch (e) {
+        g.forEach(x => x._status = '✗ ' + e.message);
+        log(`Error con ${q.call}: ${e.message}`, 'err');
+        if (/contraseña|rechaz|fetch/i.test(e.message)) { alert(e.message); break; }
+      }
+      renderTable(); save();
+      await sleep(1500);   // pausa para no disparar los límites de Gmail
+    }
+  } finally {
+    progress('#sendProg', null); $('#sendBtn').disabled = false;
+    log(`Envío terminado: ${ok}/${groups.length} correos`, 'ok');
+  }
+};
+
+/* ================= Archivos (ADIF y fondo) ================= */
+function dropZone(zone, input, handler) {
+  zone.onclick = e => { if (e.target !== input) input.click(); };
+  input.onchange = () => { if (input.files[0]) handler(input.files[0]); input.value = ''; };
+  zone.ondragover = e => { e.preventDefault(); zone.classList.add('over'); };
+  zone.ondragleave = () => zone.classList.remove('over');
+  zone.ondrop = e => { e.preventDefault(); zone.classList.remove('over'); if (e.dataTransfer.files[0]) handler(e.dataTransfer.files[0]); };
+}
+function dropZoneMulti(zone, input, handler) {
+  zone.onclick = e => { if (e.target !== input) input.click(); };
+  input.onchange = () => { [...input.files].forEach(handler); input.value = ''; };
+  zone.ondragover = e => { e.preventDefault(); zone.classList.add('over'); };
+  zone.ondragleave = () => zone.classList.remove('over');
+  zone.ondrop = e => { e.preventDefault(); zone.classList.remove('over'); [...e.dataTransfer.files].filter(f => f.type.startsWith('image/')).forEach(handler); };
+}
+dropZone($('#adifDrop'), $('#adifFile'), loadAdif);
+dropZone($('#bgDrop'), $('#bgFile'), file => {
+  const img = new Image();
+  img.onload = () => {
+    // Recorta tipo "cover" a 1240×797 y guarda como JPEG para que quepa en la sesión
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const s = Math.max(W / img.width, H / img.height), w = img.width * s, h = img.height * s;
+    c.getContext('2d').drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+    state.bg = c.toDataURL('image/jpeg', 0.9);
+    URL.revokeObjectURL(img.src);
+    loadBg(state.bg); save();
+  };
+  img.onerror = () => alert('No se pudo leer la imagen.');
+  img.src = URL.createObjectURL(file);
+});
+$('#bgClear').onclick = () => { state.bg = null; loadBg(null); save(); };
+
+/* ================= Respaldo de la configuración ================= */
+// Archivo JSON para llevar la configuración a otro computador. Las credenciales y los contactos solo van si se marcan.
+const CFG_APP = 'generador-qsl', CFG_VERSION = 1;
+$('#cfgSecrets').onchange = e => $('#cfgSecretsWarn').style.display = e.target.checked ? 'block' : 'none';
+$('#cfgSave').onclick = () => {
+  const secrets = $('#cfgSecrets').checked, withQsos = $('#cfgQsos').checked;
+  const { pass, ...mail } = state.mail;
+  const cfg = {
+    app: CFG_APP, version: CFG_VERSION, saved: new Date().toISOString(), call: state.call,
+    station: state.station, elements: state.elements, bg: state.bg, icons: state.icons,
+    mail: secrets ? state.mail : mail,
+    qrz: { remember: state.qrz.remember, ...(secrets && { session: state.qrz.session }), ...(withQsos && { cache: state.qrz.cache }) },
+    ...(withQsos && { qsos: state.qsos, fileName: state.fileName, preview: state.preview }),
+  };
+  const day = cfg.saved.slice(0, 10);
+  download(new Blob([JSON.stringify(cfg, null, 1)], { type:'application/json' }), `QSL_config_${state.call.replace(/\//g, '-')}_${day}.json`);
+  log(`Configuración guardada${withQsos ? ' con contactos' : ''}${secrets ? ' (incluye credenciales)' : ''}`, 'ok');
+};
+$('#cfgLoad').onclick = () => $('#cfgFile').click();
+$('#cfgFile').onchange = async e => {
+  const file = e.target.files[0]; e.target.value = '';
+  if (!file) return;
+  let cfg;
+  try { cfg = JSON.parse(await file.text()); } catch { return alert('El archivo no es una configuración válida (JSON dañado).'); }
+  if (cfg?.app !== CFG_APP || !Array.isArray(cfg.elements)) return alert('El archivo no es una configuración del Generador de QSL.');
+  if (cfg.version > CFG_VERSION) return alert('Esta configuración es de una versión más nueva del generador. Actualiza la aplicación.');
+  const parts = ['• Datos de la estación', '• Diseño de la QSL (fondo, logos, iconos y textos)', '• Configuración del correo'];
+  if (cfg.qsos) parts.push(`• ${cfg.qsos.length} contactos y datos de QRZ (reemplazan los actuales)`);
+  if (cfg.qrz?.session || cfg.mail?.pass) parts.push('• Session ID de QRZ y/o contraseña de Gmail');
+  const from = cfg.call && cfg.call !== state.call ? `\n\nEl archivo es del indicativo ${cfg.call}; se cargará en ${state.call}.` : '';
+  if (!confirm(`Se reemplazará la configuración actual de ${state.call} con:\n\n${parts.join('\n')}${from}\n\n¿Continuar?`)) return;
+
+  const d = defaultState(state.call);
+  state.station = { ...d.station, ...cfg.station };
+  state.elements = cfg.elements;
+  state.bg = typeof cfg.bg === 'string' ? cfg.bg : null;
+  state.icons = Array.isArray(cfg.icons) ? cfg.icons : [];
+  state.mail = { ...d.mail, ...cfg.mail, pass: cfg.mail?.pass || state.mail.pass };   // sin contraseña en el archivo, se conserva la actual
+  state.qrz = { ...state.qrz, ...cfg.qrz, session: cfg.qrz?.session || state.qrz.session, cache: cfg.qrz?.cache || state.qrz.cache };
+  if (Array.isArray(cfg.qsos)) { state.qsos = cfg.qsos; state.fileName = cfg.fileName || ''; state.preview = cfg.preview || 0; }
+  sel = 0;
+  loadBg(state.bg); bindForm(); renderElList(); renderEditor(); renderTable(); draw(); persist();
+  // Las fuentes del diseño pueden no estar cargadas aún en este navegador
+  Promise.all(state.elements.filter(el => el.font).map(el => document.fonts.load(`40px "${el.font}"`).catch(() => {}))).then(draw);
+  log(`Configuración cargada desde ${file.name}`, 'ok');
+};
+
+/* ================= Inicio ================= */
+$('#loginBtn').onclick = () => login($('#loginCall').value);
+$('#loginCall').onkeydown = e => { if (e.key === 'Enter') login(e.target.value); };
+function showLogin() {
+  state = null; $('#loginCall').value = ''; $('#login').style.display = 'flex'; $('#loginCall').focus();
+}
+// Cambiar indicativo: guarda lo pendiente y conserva los datos de este indicativo
+$('#logoutBtn').onclick = () => {
+  persist();
+  try { localStorage.removeItem('qslapp:last'); } catch {}
+  showLogin();
+};
+// Borrar todo: elimina los datos de todos los indicativos guardados en este navegador
+$('#resetAllBtn').onclick = () => {
+  if (!confirm('⚠ ATENCIÓN: se borrarán TODOS los datos guardados en este navegador:\n\n' +
+    '• Contactos cargados del ADIF y estado de los envíos\n' +
+    '• Datos de la estación, diseño de la QSL, fondo e iconos personales\n' +
+    '• Session ID de QRZ y datos consultados\n' +
+    '• Cuenta de Gmail, contraseña de aplicación y mensaje del correo\n\n' +
+    'Esta acción no se puede deshacer. ¿Deseas continuar?')) return;
+  clearTimeout(saveTimer);
+  for (const s of [localStorage, sessionStorage]) {
+    try { Object.keys(s).filter(k => k.startsWith('qslapp:')).forEach(k => s.removeItem(k)); } catch {}
+  }
+  state = null;
+  location.reload();   // arranca de cero: formulario, tabla y vista previa vacíos
+};
+window.addEventListener('pagehide', persist);   // no perder lo escrito en los últimos 300 ms
+if (location.protocol === 'file:') $('#fileWarn').style.display = 'block';
+loadLogos();
+document.fonts.ready.then(() => Promise.all(FONTS.slice(0, 5).map(f => document.fonts.load(`40px "${f}"`).catch(() => {})))).then(draw);
+try { const last = localStorage.getItem('qslapp:last'); if (last) login(last); else $('#loginCall').focus(); } catch { $('#loginCall').focus(); }
+</script>
+</body>
+</html>

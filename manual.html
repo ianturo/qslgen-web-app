@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual de usuario - Generador de QSL</title>
+<link rel="icon" href="favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    color-scheme:dark;
+    --bg:#0f141b; --panel:#171e28; --panel2:#1e2733; --line:#2b3644; --text:#e6edf3; --muted:#8b98a8;
+    --accent:#b7d1d7; --accent2:#c7e1d7; --onAccent:#111; --ok:#22c55e; --err:#ef4444; --info:#38bdf8; --warn:#f59e0b;
+  }
+  :root[data-theme=light]{
+    color-scheme:light;
+    --bg:#eef2f6; --panel:#ffffff; --panel2:#f3f6f9; --line:#d3dbe4; --text:#18212c; --muted:#5a6676;
+    --accent:#1f6a85; --accent2:#174763; --onAccent:#fff; --ok:#15803d; --err:#dc2626; --info:#0369a1; --warn:#b45309;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth;scroll-padding-top:16px}
+  body{margin:0;background:var(--bg);color:var(--text);font:15px/1.6 Inter,system-ui,sans-serif}
+  a{color:var(--accent2)}
+  code,kbd{font:13px ui-monospace,Consolas,monospace;background:var(--panel2);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+  kbd{border-bottom-width:2px}
+  header{display:flex;align-items:center;gap:16px;padding:12px 20px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+  header h1{font:700 22px Inter,sans-serif;margin:0}
+  header .spacer{flex:1}
+  .btn{display:inline-block;background:var(--accent);color:var(--onAccent);font-weight:600;text-decoration:none;border-radius:6px;padding:7px 12px}
+  .themeBtn{font:inherit;font-size:14px;color:inherit;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
+  .themeBtn:hover{border-color:var(--accent)}
+  .btn:hover{background:var(--accent2)}
+  .layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:24px;max-width:1100px;margin:0 auto;padding:24px 16px}
+  nav{position:sticky;top:16px;align-self:start;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  nav b{display:block;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+  nav ol{margin:0;padding-left:20px;font-size:14px}
+  nav li{margin:3px 0}
+  nav a{text-decoration:none}
+  nav a:hover{text-decoration:underline}
+  article{min-width:0}
+  section{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px 22px;margin-bottom:16px}
+  h2{font:700 19px Inter,sans-serif;margin:0 0 10px;color:var(--accent2)}
+  h3{font:600 16px Inter,sans-serif;margin:18px 0 6px}
+  p{margin:8px 0}
+  ul,ol{margin:8px 0;padding-left:22px}
+  li{margin:4px 0}
+  .note{border-left:4px solid var(--info);background:var(--panel2);padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0}
+  .note.warn{border-color:var(--warn)}
+  .note.err{border-color:var(--err)}
+  .note.ok{border-color:var(--ok)}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin:10px 0}
+  th,td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{color:var(--muted);font-weight:600}
+  td:first-child{white-space:nowrap}
+  .tableWrap{overflow-x:auto}
+  .intro{color:var(--muted);margin-top:0}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:8px 16px 32px}
+  @media (max-width:820px){
+    .layout{grid-template-columns:1fr;padding:16px}
+    nav{position:static}
+    section{padding:16px}
+  }
+</style>
+<script>
+// Tema claro/oscuro, compartido con index.html (misma clave "qsl-theme"). Sin preferencia guardada sigue al sistema.
+(function () {
+  const root = document.documentElement, mq = matchMedia('(prefers-color-scheme: light)');
+  let choice = null;
+  try { choice = localStorage.getItem('qsl-theme'); } catch {}
+  function apply() {
+    root.dataset.theme = choice || (mq.matches ? 'light' : 'dark');
+    document.querySelectorAll('.themeBtn').forEach(b => b.textContent = root.dataset.theme === 'light' ? '🌙 Tema oscuro' : '☀️ Tema claro');
+  }
+  window.toggleTheme = () => {
+    choice = root.dataset.theme === 'light' ? 'dark' : 'light';
+    try { localStorage.setItem('qsl-theme', choice); } catch {}
+    apply();
+  };
+  mq.addEventListener('change', apply);
+  addEventListener('storage', e => { if (e.key === 'qsl-theme') { choice = e.newValue; apply(); } });   // cambiado en otra pestaña
+  document.addEventListener('DOMContentLoaded', apply);
+  apply();
+})();
+</script>
+</head>
+<body>
+
+<header>
+  <img src="https://lh3.googleusercontent.com/pw/AP1GczPC239LM2GKhSzLFpe1-l9issPxvTSNrqt3_lHJvdRoeR0q8iaQD1yT0QevrOj8bpB9LdnXhFZAeI8YD3-00EGVRnBgO5z1TWkz1oQ4sN9gxDDu_u8RK4_DZDZzWioS8zwDOiuBcTKUqR0376hMQXLVlg=w384-h250-s-no-gm" width="60" height="40" >
+  <h1>📖 Manual de usuario · Generador de QSL</h1>
+  <span class="spacer"></span>
+  <button class="themeBtn" onclick="toggleTheme()"></button>
+  <a class="btn" href="index.html">← Volver al generador</a>
+</header>
+
+<div class="layout">
+  <nav>
+    <b>Contenido</b>
+    <ol>
+      <!--<li><a href="#inicio">Puesta en marcha</a></li>-->
+      <li><a href="#acceso">Acceso por indicativo</a></li>
+      <li><a href="#adif">Archivo ADIF</a></li>
+      <li><a href="#estacion">Mi estación</a></li>
+      <li><a href="#diseno">Diseño de la QSL</a></li>
+      <li><a href="#variables">Variables</a></li>
+      <li><a href="#contactos">Contactos y descargas</a></li>
+      <li><a href="#qrz">Consulta en QRZ.com</a></li>
+      <li><a href="#gmail">Envío por Gmail</a></li>
+      <li><a href="#datos">Privacidad y datos</a> · <a href="#respaldo">otro computador</a></li>
+      <li><a href="#problemas">Solución de problemas</a></li>
+    </ol>
+  </nav>
+
+  <article>
+    <section>
+      <p class="intro">El Generador de QSL de la Liga de Radioaficionados de Medellín crea tarjetas QSL electrónicas a partir de tu log en formato ADIF, te deja personalizar su diseño, busca el nombre y el correo de cada corresponsal en QRZ.com y envía las QSL por Gmail. Este manual explica cada paso en el mismo orden en que aparece en la pantalla.</p>
+      <h3>Flujo de trabajo resumido</h3>
+      <ol>
+        <li>Entra con tu indicativo.</li>
+        <li>Carga tu archivo ADIF.</li>
+        <li>Completa los datos de tu estación.</li>
+        <li>Diseña la QSL: fondo, logos, textos y tabla.</li>
+        <li>Consulta en QRZ los contactos seleccionados.</li>
+        <li>Envía las QSL por correo, o descárgalas.</li>
+      </ol>
+    </section>
+
+    <!-- <section id="inicio">
+      <h2>1. Puesta en marcha</h2>
+      <p>La aplicación funciona en tu navegador, pero la consulta a QRZ y el envío de correos pasan por un pequeño servidor local escrito en Python.</p>
+      <h3>Requisitos</h3>
+      <ul>
+        <li>Python 3.8 o superior instalado.</li>
+        <li>Un navegador moderno: Chrome, Edge, Firefox o Safari.</li>
+        <li>Conexión a internet para las fuentes, QRZ y Gmail.</li>
+      </ul>
+      <h3>Cómo iniciarla</h3>
+      <ul>
+        <li><b>Windows:</b> haz doble clic en <code>iniciar.bat</code>. Abre el navegador en <code>http://localhost:8000</code> y arranca el servidor.</li>
+        <li><b>Cualquier sistema:</b> en la carpeta de la aplicación ejecuta <code>python server.py</code> y abre <a href="http://localhost:8000">http://localhost:8000</a>.</li>
+      </ul>
+      <p>Deja abierta la ventana del servidor mientras usas la aplicación. Para cerrarlo pulsa <kbd>Ctrl</kbd>+<kbd>C</kbd> en esa ventana o ciérrala.</p>
+      <div class="note warn">Si abres <code>index.html</code> con doble clic, como archivo local, verás un aviso rojo. En ese modo puedes diseñar y descargar, pero QRZ, Gmail y los logos predefinidos no funcionan.</div>
+    </section> -->
+
+    <section id="acceso">
+      <h2>1. Acceso por indicativo</h2>
+      <p>Al abrir la aplicación escribe tu indicativo, por ejemplo <code>HK4AAA</code>, y pulsa <b>Entrar</b> o <kbd>Enter</kbd>. No hace falta contraseña: el indicativo solo separa tus datos de los de otros indicativos que usen el mismo navegador.</p>
+      <ul>
+        <li>La próxima vez que abras la página entrarás directamente con el último indicativo usado.</li>
+        <li><b>☀️ Tema claro / 🌙 Tema oscuro</b> cambia la apariencia de la aplicación y del manual. Al principio se usa el tema de tu sistema; el que elijas queda guardado en el navegador, incluso después de usar <b>Borrar todo</b>. El tema no cambia el diseño de la QSL.</li>
+        <li><b>Cambiar indicativo</b>, arriba a la derecha, guarda tu trabajo y vuelve a la pantalla de acceso. Tus datos siguen guardados.</li>
+        <li><b>🗑 Borrar todo</b> elimina los datos de <i>todos</i> los indicativos guardados en este navegador. Esta acción no se puede deshacer.</li>
+      </ul>
+    </section>
+
+    <section id="adif">
+      <h2>2. Archivo ADIF</h2>
+      <p>Exporta tu log desde tu programa de registro (Log4OM, N1MM, WSJT-X, HRD, QRZ Logbook, etc.) en formato <code>.adi</code> o <code>.adif</code>. Luego arrastra el archivo al recuadro <b>1. Archivo ADIF</b>, o haz clic en el recuadro para elegirlo.</p>
+      <ul>
+        <li>Los contactos aparecen en la tabla <b>Contactos</b>, todos seleccionados.</li>
+        <li>Si el ADIF incluye tus datos (<code>MY_GRIDSQUARE</code>, <code>MY_CITY</code>, <code>MY_RIG</code>, etc.), se copian a <b>Mi estación</b> sin borrar lo que ya hayas escrito.</li>
+        <li>El nombre del corresponsal se toma de los campos <code>NAME_INTL</code> o <code>NAME</code> del ADIF y se usa en <code>{NOMBRE}</code> y <code>{NOMBRE_COMPLETO}</code>. La columna <b>Nombre</b> lo marca con <span style="color:var(--muted)">(ADIF)</span>. Si después consultas QRZ, se usa el nombre de QRZ.</li>
+        <li>Si un contacto trae su correo en el campo <code>EMAIL</code> del ADIF, se usa directamente para el envío. La columna <b>Correo</b> lo marca con <span style="color:var(--muted)">(ADIF)</span> y ese indicativo no necesita consulta en QRZ.</li>
+        <li>Al cargar un archivo nuevo se reemplaza la lista anterior de contactos.</li>
+      </ul>
+    </section>
+
+    <section id="estacion">
+      <h2>3. Mi estación</h2>
+      <p>Estos datos se imprimen en la QSL mediante variables como <code>{MI_NOMBRE}</code> o <code>{RIG}</code>. Rellena los que quieras mostrar: si un dato está vacío, el tramo correspondiente desaparece automáticamente del texto.</p>
+      <div class="tableWrap"><table>
+        <tr><th>Campo</th><th>Uso</th></tr>
+        <tr><td>Mi indicativo, Nombre</td><td>Tu indicativo y tu nombre como aparecerán en la tarjeta.</td></tr>
+        <tr><td>QTH, País, Grid, Zona CQ, Zona ITU</td><td>Ubicación de tu estación.</td></tr>
+        <tr><td>Equipo, Antena, Potencia</td><td>Si dejas Potencia vacía, se toma de cada QSO del ADIF (<code>TX_PWR</code>).</td></tr>
+        <tr><td>Formato de fecha</td><td>Cómo se muestran las fechas: <code>2025-02-22</code>, <code>22/02/2025</code>, <code>22-FEB-2025</code> o <code>02/22/2025</code>.</td></tr>
+        <tr><td>Texto extra</td><td>Texto libre disponible como <code>{EXTRA}</code>, por ejemplo “Miembro LRM #1234”.</td></tr>
+      </table></div>
+    </section>
+
+    <section id="diseno">
+      <h2>4. Diseño de la QSL</h2>
+      <p>La tarjeta mide 1240 × 797 píxeles. La <b>Vista previa</b> muestra el contacto seleccionado en la tabla, o un contacto de ejemplo si aún no has cargado un ADIF.</p>
+
+      <h3>Imagen de fondo</h3>
+      <p>Haz clic en <b>Subir imagen de fondo</b> o arrastra una imagen al recuadro. Se recorta y ajusta automáticamente al tamaño de la tarjeta. El botón <b>✕</b> la quita y vuelve al fondo predeterminado.</p>
+      <div class="note">Usa una imagen horizontal de al menos 1240 × 797 píxeles para que se vea nítida. Si la imagen es muy pesada puede no caber en el almacenamiento del navegador; en ese caso verás un aviso y tendrás que volver a subirla al recargar.</div>
+
+      <h3>Logos e iconos</h3>
+      <ul>
+        <li><b>Logos:</b> haz clic en un logo de la cuadrícula para añadirlo a la QSL; vuelve a hacer clic para quitarlo. Los activos se marcan con ✓. <!--Para agregar logos predefinidos, copia imágenes en la carpeta <code>logos/</code> del servidor.--></li>
+        <li><b>Mis iconos:</b> sube tus propias imágenes, mejor en PNG con fondo transparente. Se reducen a 500 px como máximo y quedan guardadas en tu navegador. La ✕ pequeña de cada icono lo elimina.</li>
+      </ul>
+
+      <h3>Elementos</h3>
+      <p>La QSL está formada por elementos: <i>Mi indicativo</i>, <i>Datos de estación</i>, <i>Para (QSO con)</i>, <i>Tabla del QSO</i>, <i>Pie</i>, más los logos, iconos y textos que añadas.</p>
+      <ul>
+        <li><b>Seleccionar:</b> haz clic en el elemento en la vista previa o en su botón de la lista. Queda resaltado con un recuadro naranja.</li>
+        <li><b>Mover:</b> arrástralo con el ratón o con el dedo, o escribe sus coordenadas X e Y en el editor.</li>
+        <li><b>Redimensionar imágenes:</b> arrastra el cuadrito naranja de la esquina inferior derecha.</li>
+        <li><b>Ocultar:</b> pulsa <kbd>Supr</kbd> o <kbd>Retroceso</kbd> con el elemento seleccionado, o desmarca <b>Visible</b>. Los logos e iconos se quitan de la QSL; actívalos de nuevo desde su cuadrícula.</li>
+        <li><b>Deseleccionar:</b> haz clic en una zona vacía del fondo.</li>
+      </ul>
+
+      <h3>Opciones del editor</h3>
+      <ul>
+        <li><b>Textos:</b> contenido (admite varias líneas y variables), tamaño, fuente, alineación, negrita, color, y color y grosor del borde.</li>
+        <li><b>Tabla del QSO:</b> tamaño, ancho, fuente, colores de datos, títulos y fondo, opacidad del fondo y columnas a mostrar (Indicativo, Fecha, Hora UTC, Frecuencia, Banda, Modo, RST enviado y recibido).</li>
+        <li><b>Imágenes:</b> posición, ancho y opacidad.</li>
+      </ul>
+      <p><b>+ Añadir texto</b> crea un texto nuevo en el centro de la tarjeta, que puedes eliminar desde el editor. <b>Restablecer diseño</b> devuelve los textos y la tabla a su diseño original y conserva los logos e iconos.</p>
+    </section>
+
+    <section id="variables">
+      <h2>5. Variables</h2>
+      <p>Las variables se escriben entre llaves y se reemplazan por los datos de cada contacto. Para insertarlas, haz clic en el campo de texto donde quieras ponerlas y luego en la variable de la lista <b>Variables disponibles</b>. Funcionan en los textos de la QSL y en el asunto y el mensaje del correo.</p>
+      <div class="tableWrap"><table>
+        <tr><th>Variable</th><th>Contenido</th></tr>
+        <tr><td><code>{MI_INDICATIVO}</code> <code>{MI_NOMBRE}</code></td><td>Tu indicativo y tu nombre.</td></tr>
+        <tr><td><code>{MI_QTH}</code> <code>{MI_PAIS}</code> <code>{MI_GRID}</code></td><td>Tu ciudad, país y cuadrícula.</td></tr>
+        <tr><td><code>{CQ}</code> <code>{ITU}</code></td><td>Tus zonas CQ e ITU.</td></tr>
+        <tr><td><code>{RIG}</code> <code>{ANTENA}</code> <code>{POTENCIA}</code></td><td>Tu equipo, antena y potencia.</td></tr>
+        <tr><td><code>{EXTRA}</code></td><td>El texto extra de Mi estación.</td></tr>
+        <tr><td><code>{CALL}</code></td><td>Indicativo del corresponsal.</td></tr>
+        <tr><td><code>{NOMBRE}</code> <code>{NOMBRE_COMPLETO}</code></td><td>Nombre de pila o nombre completo del corresponsal, tomado de QRZ o del ADIF. Si no hay nombre, se usa su indicativo.</td></tr>
+        <tr><td><code>{FECHA}</code> <code>{HORA}</code></td><td>Fecha del QSO, en el formato elegido, y hora UTC.</td></tr>
+        <tr><td><code>{FREQ}</code> <code>{BANDA}</code> <code>{MODO}</code></td><td>Frecuencia en MHz, banda y modo.</td></tr>
+        <tr><td><code>{RST_ENV}</code> <code>{RST_REC}</code></td><td>Reportes enviado y recibido.</td></tr>
+        <tr><td><code>{QTH}</code> <code>{GRID}</code> <code>{PAIS}</code></td><td>Ubicación del corresponsal.</td></tr>
+        <tr><td><code>{QSOS}</code></td><td>Lista de los contactos incluidos en el correo, uno por línea. Útil en el mensaje.</td></tr>
+      </table></div>
+      <div class="note ok">En los textos de la QSL, los tramos separados por <code>·</code>, <code>|</code> o <code>,</code> cuyas variables están vacías se eliminan solos, igual que las líneas que quedan vacías. Así no aparecen etiquetas como “Ant:” sin dato.</div>
+    </section>
+
+    <section id="contactos">
+      <h2>6. Contactos y descargas</h2>
+      <ul>
+        <li><b>Seleccionar:</b> marca o desmarca la casilla de cada fila. La casilla del encabezado selecciona todos los contactos visibles.</li>
+        <li><b>Previsualizar:</b> haz clic en una fila para verla en la vista previa.</li>
+        <li><b>Filtrar:</b> escribe parte de un indicativo, un modo o una banda en <b>Filtrar…</b>.</li>
+        <li><b>⬇</b> en cada fila descarga la QSL de ese contacto.</li>
+        <li><b>Descargar esta QSL</b> descarga la QSL que está en la vista previa.</li>
+        <li><b>📋 Copiar imagen</b> la copia al portapapeles para pegarla en WhatsApp, Telegram o un correo. Solo funciona en <code>http://localhost:8000</code> o por https.</li>
+        <li><b>Descargar seleccionadas (ZIP)</b> genera un ZIP con las QSL de todos los contactos seleccionados.</li>
+      </ul>
+      <p>La columna <b>Estado</b> muestra el resultado del envío: <span style="color:var(--ok)">✓ Enviado</span> o <span style="color:var(--err)">✗ Error</span>. Debajo de la tabla hay un registro con lo que va ocurriendo.</p>
+      <p>El formato de los archivos, JPG o PNG, se elige en <b>5. Envío por Gmail → Formato de imagen</b>.</p>
+    </section>
+
+    <section id="qrz">
+      <h2>7. Consulta en QRZ.com</h2>
+      <p>QRZ proporciona el nombre y, si el corresponsal lo tiene público, el correo electrónico al que se enviará la QSL.</p>
+      <h3>Obtener el Session ID</h3>
+      <ol>
+        <li>Necesitas una cuenta de QRZ.com con suscripción que incluya el <b>XML Logbook Data</b>. Sin suscripción, QRZ entrega datos limitados y normalmente sin correo.</li>
+        <li>Abre en el navegador, reemplazando tus datos:<br>
+          <code>https://xmldata.qrz.com/xml/current/?username=TU_INDICATIVO;password=TU_CONTRASEÑA</code></li>
+        <li>Copia el valor que aparece entre <code>&lt;Key&gt;</code> y <code>&lt;/Key&gt;</code>. Ese es tu Session ID.</li>
+      </ol>
+      <h3>Consultar</h3>
+      <ol>
+        <li>Pega el Session ID en <b>4. QRZ.com</b>. Marca <b>Recordar el Session ID</b> si quieres que se guarde en este navegador.</li>
+        <li>Selecciona los contactos en la tabla y pulsa <b>Consultar seleccionados</b>.</li>
+        <li>Las columnas <b>Nombre</b> y <b>Correo</b> se completan. Los indicativos repetidos se consultan una sola vez.</li>
+      </ol>
+      <ul>
+        <li>Los indicativos que ya tienen correo en el campo <code>EMAIL</code> del ADIF se omiten. Si todos los seleccionados lo tienen, no hace falta el Session ID.</li>
+        <li>Si un indicativo tiene correo en QRZ y en el ADIF, se usa el de QRZ.</li>
+        <li>Los indicativos portables, como <code>EA8/LU7YZ/P</code>, se reintentan con el indicativo base si QRZ no los encuentra.</li>
+        <li>Los resultados se guardan; <b>Limpiar caché</b> los borra para volver a consultarlos.</li>
+      </ul>
+      <div class="note warn">El Session ID caduca después de un tiempo. Si aparece un error de sesión, genera uno nuevo con el paso 2.</div>
+    </section>
+
+    <section id="gmail">
+      <h2>8. Envío por Gmail</h2>
+      <h3>Crear una contraseña de aplicación</h3>
+      <p>Gmail no acepta tu contraseña normal desde programas externos. Necesitas una <b>contraseña de aplicación</b>:</p>
+      <ol>
+        <li>Activa la <b>Verificación en dos pasos</b> en tu cuenta de Google.</li>
+        <li>Entra a <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">myaccount.google.com/apppasswords</a>.</li>
+        <li>Escribe un nombre, por ejemplo “Generador QSL”, y pulsa <b>Crear</b>.</li>
+        <li>Copia la contraseña de 16 letras que te muestra Google.</li>
+      </ol>
+      <h3>Configurar el envío</h3>
+      <ol>
+        <li>Escribe tu <b>Cuenta Gmail</b> y pega la <b>Contraseña de aplicación</b>. Pulsa <b>Probar</b> para comprobar la conexión.</li>
+        <li>Revisa el <b>Nombre del remitente</b>, el <b>Asunto</b> y el <b>Mensaje</b>. Puedes usar variables; <code>{NOMBRE}</code> y <code>{QSOS}</code> son las más útiles.</li>
+        <li>Elige el <b>Formato de imagen</b>: JPG es más liviano, PNG tiene más calidad.</li>
+        <li>Opciones:
+          <ul>
+            <li><b>Un solo correo por indicativo:</b> si trabajaste varias veces con la misma estación, recibe un único correo con todas sus QSL adjuntas.</li>
+            <li><b>No reenviar a los ya enviados:</b> omite los contactos cuyo estado es ✓ Enviado.</li>
+          </ul>
+        </li>
+        <li>Pulsa <b>Enviar QSL por correo</b> y confirma. Se envían solo los contactos seleccionados que tengan correo, ya sea del ADIF o de QRZ.</li>
+      </ol>
+      <div class="note">Entre correo y correo hay una pausa de 1,5 segundos para no superar los límites de Gmail, que permite unos 500 mensajes al día en cuentas personales. Si envías muchas QSL, hazlo por tandas.</div>
+    </section>
+
+    <section id="datos">
+      <h2>9. Privacidad y datos</h2>
+      <ul>
+        <li>Todo se guarda solo en <b>este navegador</b>: contactos, diseño, fondo, iconos y configuración. El servidor no guarda nada: no hay base de datos ni registros con tus datos.</li>
+        <li>El Session ID de QRZ y la contraseña de Gmail se guardan solo si marcas las casillas <b>Recordar</b>. Si no, se olvidan al cerrar la página.</li>
+        <li>Como los datos viven en el navegador, no aparecen en otro equipo ni en otro navegador, y se pierden si borras los datos de navegación.</li>
+        <li>En un equipo compartido, usa <b>🗑 Borrar todo</b> al terminar.</li>
+      </ul>
+      <h3 id="respaldo">Llevar la configuración a otro computador</h3>
+      <p>En <b>6. Guardar / cargar configuración</b> puedes pasar tu trabajo a otro equipo o navegador:</p>
+      <ol>
+        <li>En el computador de origen pulsa <b>💾 Guardar configuración</b>. Se descarga un archivo <code>QSL_config_INDICATIVO_fecha.json</code>.</li>
+        <li>Copia ese archivo al otro computador, por ejemplo con una memoria USB o por correo.</li>
+        <li>En el otro computador entra con tu indicativo, pulsa <b>📂 Cargar configuración</b> y elige el archivo.</li>
+      </ol>
+      <p>El archivo siempre incluye los datos de la estación, el diseño completo (fondo, logos, iconos personales y textos) y la configuración del correo (remitente, asunto, mensaje y opciones). Además puedes marcar:</p>
+      <ul>
+        <li><b>Incluir contactos, estado de envíos y datos de QRZ:</b> para continuar el trabajo donde lo dejaste, sin volver a cargar el ADIF ni consultar QRZ.</li>
+        <li><b>Incluir Session ID de QRZ y contraseña de Gmail:</b> quedan <b>sin cifrar</b> dentro del archivo. Úsalo solo si guardas el archivo en un lugar seguro.</li>
+      </ul>
+      <div class="note">Al cargar, la configuración reemplaza la actual. Si el archivo no trae contactos o credenciales, se conservan los que ya tenías en ese navegador. Los logos predefinidos solo aparecen si el otro servidor tiene las mismas imágenes en su carpeta <code>logos/</code>; los iconos personales sí viajan dentro del archivo.</div>
+    </section>
+
+    <section id="problemas">
+      <h2>11. Solución de problemas</h2>
+      <div class="tableWrap"><table>
+        <tr><th>Problema</th><th>Solución</th></tr>
+        <tr><td>Aviso rojo “Abriste la página como archivo local”</td><td>Ejecuta <code>python server.py</code> o <code>iniciar.bat</code> y entra a <code>http://localhost:8000</code>.</td></tr>
+        <!--<tr><td>“No se pudo contactar al servidor local”</td><td>La ventana del servidor se cerró o mostró un error. Vuelve a iniciarla.</td></tr>-->
+        <tr><td>“No se encontraron contactos en el archivo”</td><td>Verifica que el archivo sea ADIF (<code>.adi</code>/<code>.adif</code>) y que tenga registros con <code>CALL</code>.</td></tr>
+        <tr><td>QRZ: “Session Timeout” o “Invalid session key”</td><td>El Session ID caducó o es incorrecto. Genera uno nuevo.</td></tr>
+        <tr><td>QRZ devuelve el nombre pero “sin correo”</td><td>El corresponsal no publica su correo o tu suscripción no lo incluye. Puedes descargar esa QSL y enviarla por otro medio.</td></tr>
+        <tr><td>“Gmail rechazó el usuario o la contraseña de aplicación”</td><td>Usa una contraseña de aplicación, no la normal, y comprueba que la verificación en dos pasos esté activa.</td></tr>
+        <tr><td>“Copiar imagen” no funciona</td><td>El portapapeles exige <code>localhost</code> o https. Usa <b>Descargar esta QSL</b>.</td></tr>
+        <tr><td>El fondo desaparece al recargar</td><td>La imagen es demasiado grande para el almacenamiento del navegador. Usa una imagen más liviana.</td></tr>
+        <tr><td>No aparecen logos predefinidos</td><td>Copia imágenes PNG, JPG, WebP, SVG o GIF en la carpeta <code>logos/</code> y recarga la página.</td></tr>
+        <tr><td>El ZIP no se genera</td><td>La librería JSZip se carga desde internet. Revisa tu conexión.</td></tr>
+      </table></div>
+    </section>
+  </article>
+</div>
+
+<footer>Generador de QSL · Creado por HK4Q · 73!</footer>
+
+</body>
+</html>
