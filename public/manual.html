@@ -101,7 +101,7 @@
 <body>
 
 <header>
-  <img src="post-card.png" width="50" height="50" alt="Logo Post Card">
+  <img src="post-card.png"  width="82" height="54" alt="Logo Post Card">
   <h1><span lang="es">📖 Manual de usuario · Generador de QSL</span><span lang="en">📖 User manual · QSL Generator</span></h1>
   <span class="spacer"></span>
   <button class="langBtn themeBtn" onclick="toggleLang()"></button>
@@ -240,7 +240,7 @@
         <li><b>Filtrar:</b> escribe parte de un indicativo, un modo o una banda en <b>Filtrar…</b>.</li>
         <li><b>⬇</b> en cada fila descarga la QSL de ese contacto.</li>
         <li><b>Descargar esta QSL</b> descarga la QSL que está en la vista previa.</li>
-        <li><b>📋 Copiar imagen</b> la copia al portapapeles para pegarla en WhatsApp, Telegram o un correo. Solo funciona en <code>http://localhost:8000</code> o por https.</li>
+        <li><b>📋 Copiar imagen</b> la copia al portapapeles para pegarla en WhatsApp, Telegram o un correo. Esta opcion no esta disponible en todos los navegadores o dispositivos.</li>
         <li><b>Descargar seleccionadas (ZIP)</b> genera un ZIP con las QSL de todos los contactos seleccionados.</li>
       </ul>
       <p>La columna <b>Estado</b> muestra el resultado del envío: <span style="color:var(--ok)">✓ Enviado</span> o <span style="color:var(--err)">✗ Error</span>. Debajo de la tabla hay un registro con lo que va ocurriendo.</p>
@@ -252,10 +252,11 @@
       <p>QRZ proporciona el nombre y, si el corresponsal lo tiene público, el correo electrónico al que se enviará la QSL.</p>
       <h3>Obtener el Session ID</h3>
       <ol>
-        <li>Necesitas una cuenta de QRZ.com con suscripción que incluya el <b>XML Logbook Data</b>. Sin suscripción, QRZ entrega datos limitados y normalmente sin correo.</li>
-        <li>Abre en el navegador, reemplazando tus datos:<br>
-          <code>https://xmldata.qrz.com/xml/current/?username=TU_INDICATIVO;password=TU_CONTRASEÑA</code></li>
-        <li>Copia el valor que aparece entre <code>&lt;Key&gt;</code> y <code>&lt;/Key&gt;</code>. Ese es tu Session ID.</li>
+        <li><div class="note warn">Necesitas una cuenta de QRZ.com con suscripción que incluya el <b>XML Logbook Data</b>. Sin suscripción, QRZ entrega datos limitados y normalmente sin correo. 
+        Si no tienes suscripcion exporta un archivo ADIF desde QRZ y es posible que este tenga los datos de correo y nombre de los corresponsales</div></li>
+        <li>Abre en el navegador la siguiente direccion:<br>
+          <code><a href="https://xml.qrz.com/xcheck" target="blank">https://xml.qrz.com/xcheck</a></code></li>
+        <li>Copia el valor <code>Key:</code> Ese es tu Session ID.</li>
       </ol>
       <h3>Consultar</h3>
       <ol>
@@ -269,7 +270,7 @@
         <li>Los indicativos portables, como <code>EA8/LU7YZ/P</code>, se reintentan con el indicativo base si QRZ no los encuentra.</li>
         <li>Los resultados se guardan; <b>Limpiar caché</b> los borra para volver a consultarlos.</li>
       </ul>
-      <div class="note warn">El Session ID caduca después de un tiempo. Si aparece un error de sesión, genera uno nuevo con el paso 2.</div>
+      <div class="note warn">El Session ID caduca después de un tiempo y nunca viajan ni se almacenan en este servidor. Si aparece un error de sesión, genera uno nuevo con el paso 2.</div>
     </section>
 
     <section id="gmail">
@@ -469,7 +470,7 @@
         <li><b>Filter:</b> type part of a callsign, mode or band in <b>Filter…</b>.</li>
         <li><b>⬇</b> on each row downloads that contact's QSL.</li>
         <li><b>Download this QSL</b> downloads the QSL shown in the preview.</li>
-        <li><b>📋 Copy image</b> copies it to the clipboard so you can paste it into WhatsApp, Telegram or an email. It only works at <code>http://localhost:8000</code> or over https.</li>
+        <li><b>📋 Copy image</b> copies it to the clipboard so you can paste it into WhatsApp. This option is not available on all browsers or devices.</li>
         <li><b>Download selected (ZIP)</b> generates a ZIP with the QSLs of all selected contacts.</li>
       </ul>
       <p>The <b>Status</b> column shows the sending result: <span style="color:var(--ok)">✓ Sent</span> or <span style="color:var(--err)">✗ Error</span>. Below the table there is a log of what is happening.</p>
@@ -481,10 +482,11 @@
       <p>QRZ provides the name and, if the correspondent has made it public, the email address to which the QSL will be sent.</p>
       <h3>Getting the Session ID</h3>
       <ol>
-        <li>You need a QRZ.com account with a subscription that includes <b>XML Logbook Data</b>. Without a subscription, QRZ returns limited data, normally without email.</li>
-        <li>Open in your browser, replacing your details:<br>
-          <code>https://xmldata.qrz.com/xml/current/?username=YOUR_CALLSIGN;password=YOUR_PASSWORD</code></li>
-        <li>Copy the value between <code>&lt;Key&gt;</code> and <code>&lt;/Key&gt;</code>. That is your Session ID.</li>
+        <li><div class="note warn">You need a QRZ.com account with a subscription that includes <b>XML Logbook Data</b>. Without a subscription, QRZ returns limited data, normally without email. 
+        If you don’t have a subscription, export an ADIF file from QRZ; it may contain the names and email addresses of the correspondents.</div></li>
+        <li>Open in your browser, replacing your Account user and Password:<br>
+          <code><a href="https://xml.qrz.com/xcheck" target="blank">https://xml.qrz.com/xcheck</a></code></li>
+        <li>Copy the value <code>Key:</code> That is your Session ID.</li>
       </ol>
       <h3>Looking up</h3>
       <ol>
@@ -498,7 +500,7 @@
         <li>Portable callsigns, such as <code>EA8/LU7YZ/P</code>, are retried with the base callsign if QRZ cannot find them.</li>
         <li>Results are saved; <b>Clear cache</b> deletes them so they can be queried again.</li>
       </ul>
-      <div class="note warn">The Session ID expires after a while. If a session error appears, generate a new one with step 2.</div>
+      <div class="note warn">The Session ID expires after a while and never travel to server. If a session error appears, generate a new one with step 2.</div>
     </section>
 
     <section id="gmail-en">

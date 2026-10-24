@@ -102,7 +102,7 @@
   // Idioma: preferencia guardada ("qsl-lang", que "Borrar todo" conserva) o, si no hay, el del navegador
   let lang = null;
   try { lang = localStorage.getItem('qsl-lang'); } catch {}
-  root.lang = lang === 'es' || lang === 'es' ? lang : (/^es/i.test(navigator.language || '') ? 'es' : 'en');
+  root.lang = lang === 'en' || lang === 'es' ? lang : (/^es/i.test(navigator.language || '') ? 'es' : 'en');
   let choice = null;
   try { choice = localStorage.getItem('qsl-theme'); } catch {}
   function apply() {
@@ -137,6 +137,11 @@
     <p class="small" style="margin:14px 0 0"><a href="manual.html" target="_blank" data-i18n="manual">📖 Manual de usuario</a></p>
     <button class="themeBtn small" onclick="toggleTheme()" style="margin-top:10px"></button>
     <button class="langBtn small" onclick="toggleLang()" style="margin-top:10px"></button>
+    <details>
+        <summary data-i18n="disclaimer_title">EXCLUSIÓN DE GARANTÍAS Y LIMITACIÓN DE RESPONSABILIDAD</summary>
+        <div class="muted small" data-i18n="disclaimer" align="center">EL SOFTWARE SE PROPORCIONA "TAL CUAL" Y "SEGÚN DISPONIBILIDAD", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O IMPLÍCITA, INCLUIDAS, ENTRE OTRAS, LAS GARANTÍAS DE COMERCIABILIDAD, IDONEIDAD PARA UN FIN PARTICULAR Y NO INFRACCIÓN.\nEN NINGÚN CASO EL AUTOR, LOS DESARROLLADORES O LOS TITULARES DEL COPYRIGHT SERÁN RESPONSABLES DE NINGÚN DAÑO DIRECTO, INDIRECTO, INCIDENTAL, ESPECIAL, PUNITIVO O CONSECUENTE (INCLUYENDO, PÉRDIDA DE DATOS, INTERRUPCIÓN DE LA ACTIVIDAD COMERCIAL O PÉRDIDA DE BENEFICIOS) QUE DERIVE DEL USO O DE LA IMPOSIBILIDAD DE USO DEL SOFTWARE, AUNQUE SE HAYA ADVERTIDO DE LA POSIBILIDAD DE DICHOS DAÑOS.\nEL USUARIO ASUME TODO EL RIESGO EN CUANTO A LA CALIDAD, EL RENDIMIENTO Y LA SEGURIDAD DEL PROGRAMA.
+        </div>
+    </details>
   </div>
 </div>
 
@@ -319,8 +324,20 @@
     <div>
         <p class="muted small" align="center" data-i18n="credit">Creado por HK4Q</p>
     </div>
+    <details>
+        <summary data-i18n="disclaimer_title">EXCLUSIÓN DE GARANTÍAS Y LIMITACIÓN DE RESPONSABILIDAD</summary>
+        <div class="muted small" data-i18n="disclaimer" align="center">EL SOFTWARE SE PROPORCIONA "TAL CUAL" Y "SEGÚN DISPONIBILIDAD", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O IMPLÍCITA, INCLUIDAS, ENTRE OTRAS, LAS GARANTÍAS DE COMERCIABILIDAD, IDONEIDAD PARA UN FIN PARTICULAR Y NO INFRACCIÓN.\nEN NINGÚN CASO EL AUTOR, LOS DESARROLLADORES O LOS TITULARES DEL COPYRIGHT SERÁN RESPONSABLES DE NINGÚN DAÑO DIRECTO, INDIRECTO, INCIDENTAL, ESPECIAL, PUNITIVO O CONSECUENTE (INCLUYENDO, PÉRDIDA DE DATOS, INTERRUPCIÓN DE LA ACTIVIDAD COMERCIAL O PÉRDIDA DE BENEFICIOS) QUE DERIVE DEL USO O DE LA IMPOSIBILIDAD DE USO DEL SOFTWARE, AUNQUE SE HAYA ADVERTIDO DE LA POSIBILIDAD DE DICHOS DAÑOS.\nEL USUARIO ASUME TODO EL RIESGO EN CUANTO A LA CALIDAD, EL RENDIMIENTO Y LA SEGURIDAD DEL PROGRAMA.
+        </div>
+    </details>
   </section>
 </main>
+
+<script>
+function togglePopup() {
+var popup = document.getElementById("myPopup");
+popup.classList.toggle("show");
+}
+</script>    
 
 <script>
 'use strict';
@@ -351,6 +368,8 @@ const I18N = {
 es: {
   'title': `Generador de QSL`,
   'credit': `Creado por HK4Q`,
+  'disclaimer_title':'EXCLUSIÓN DE GARANTÍAS Y LIMITACIÓN DE RESPONSABILIDAD',
+  'disclaimer':'EL SOFTWARE SE PROPORCIONA "TAL CUAL" Y "SEGÚN DISPONIBILIDAD", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O IMPLÍCITA, INCLUIDAS, ENTRE OTRAS, LAS GARANTÍAS DE COMERCIABILIDAD, IDONEIDAD PARA UN FIN PARTICULAR Y NO INFRACCIÓN.\nEN NINGÚN CASO EL AUTOR, LOS DESARROLLADORES O LOS TITULARES DEL COPYRIGHT SERÁN RESPONSABLES DE NINGÚN DAÑO DIRECTO, INDIRECTO, INCIDENTAL, ESPECIAL, PUNITIVO O CONSECUENTE (INCLUYENDO, PÉRDIDA DE DATOS, INTERRUPCIÓN DE LA ACTIVIDAD COMERCIAL O PÉRDIDA DE BENEFICIOS) QUE DERIVE DEL USO O DE LA IMPOSIBILIDAD DE USO DEL SOFTWARE, AUNQUE SE HAYA ADVERTIDO DE LA POSIBILIDAD DE DICHOS DAÑOS.\nEL USUARIO ASUME TODO EL RIESGO EN CUANTO A LA CALIDAD, EL RENDIMIENTO Y LA SEGURIDAD DEL PROGRAMA.',
   'login.title': `📻 Generador de QSL 🖄`,
   'login.intro': `Ingresa tu indicativo para comenzar. Tus datos se guardan solo en este navegador, nunca en el servidor. Tú decides si también se recuerdan el Session ID de QRZ y la contraseña de Gmail.`,
   'login.enter': `Entrar`,
@@ -404,7 +423,7 @@ es: {
   'el.to': `Para (QSO con)`, 'el.to.text': `QSO con: {CALL}`,
   'el.table': `Tabla del QSO`, 'el.footer': `Pie`, 'el.footer.text': `Gracias · 73!`,
   'mail.subject': `QSL {MI_INDICATIVO} - {CALL} - {FECHA}`,
-  'mail.body': `Hola {NOMBRE},\n\nMuchas gracias por el contacto. Adjunto mi QSL electrónica confirmando:\n\n{QSOS}\n\nEspero volver a encontrarte en las bandas.\n\n73 de {MI_INDICATIVO}\n{MI_NOMBRE}\n{MI_QTH}, {MI_PAIS}\n\nGenerado y enviado desde: <a href="https://qslgen.hk4q.net">QSLGen Web App</a>`,
+  'mail.body': `Hola {NOMBRE},\n\nMuchas gracias por el contacto. Adjunto mi QSL electrónica confirmando:\n\n{QSOS}\n\nEspero volver a encontrarte en las bandas.\n\n73 de {MI_INDICATIVO}\n{MI_NOMBRE}\n{MI_QTH}, {MI_PAIS}\n\nGenerado y enviado desde: https://qslgen.hk4q.net QSLGen Web App`,
   'saved': `Datos guardados en este navegador`,
   'bgTooBig': `⚠ Fondo demasiado grande para guardarlo (se perderá al recargar)`,
   'badCall': `Indicativo no válido`,
@@ -466,6 +485,8 @@ es: {
 en: {
   'title': `QSL Generator`,
   'credit': `Created by HK4Q`,
+  'disclaimer_title':'DISCLAIMER OF WARRANTIES AND LIMITATION OF LIABILITY',
+  'disclaimer':'THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE," WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.\nIN NO EVENT SHALL THE AUTHOR, DEVELOPERS, OR COPYRIGHT HOLDERS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, PUNITIVE, OR CONSEQUENTIAL DAMAGES (INCLUDING LOSS OF DATA, BUSINESS INTERRUPTION, OR LOSS OF PROFITS) ARISING FROM THE USE OR INABILITY TO USE THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.\nTHE USER ASSUMES ALL RISK REGARDING THE QUALITY, PERFORMANCE, AND SECURITY OF THE PROGRAM.',
   'login.title': `📻 QSL Generator 🖄`,
   'login.intro': `Enter your callsign to get started. Your data is stored only in this browser, never on the server. You decide whether the QRZ Session ID and the Gmail password are remembered too.`,
   'login.enter': `Enter`,
@@ -519,7 +540,7 @@ en: {
   'el.to': `To (QSO with)`, 'el.to.text': `QSO with: {CALL}`,
   'el.table': `QSO table`, 'el.footer': `Footer`, 'el.footer.text': `Thanks · 73!`,
   'mail.subject': `QSL {MY_CALL} - {CALL} - {DATE}`,
-  'mail.body': `Hello {NAME},\n\nThank you very much for the contact. Attached is my electronic QSL confirming:\n\n{QSOS}\n\nI hope to meet you again on the bands.\n\n73 from {MY_CALL}\n{MY_NAME}\n{MY_QTH}, {MY_COUNTRY}\n\nGenerated and sent from: <a href="https://qslgen.hk4q.net">QSLGen Web App</a>`,
+  'mail.body': `Hello {NAME},\n\nThank you very much for the contact. Attached is my electronic QSL confirming:\n\n{QSOS}\n\nI hope to meet you again on the bands.\n\n73 from {MY_CALL}\n{MY_NAME}\n{MY_QTH}, {MY_COUNTRY}\n\nGenerated and sent from: https://qslgen.hk4q.net QSLGen Web App`,
   'saved': `Data saved in this browser`,
   'bgTooBig': `⚠ Background too large to save (it will be lost on reload)`,
   'badCall': `Invalid callsign`,
