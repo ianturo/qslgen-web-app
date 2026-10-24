@@ -54,6 +54,7 @@
   th{color:var(--muted);font-weight:600}
   td:first-child{white-space:nowrap}
   .tableWrap{overflow-x:auto}
+  html[lang=es] [lang=en], html[lang=en] [lang=es]{display:none}
   .intro{color:var(--muted);margin-top:0}
   footer{text-align:center;color:var(--muted);font-size:13px;padding:8px 16px 32px}
   @media (max-width:820px){
@@ -66,19 +67,32 @@
 // Tema claro/oscuro, compartido con index.html (misma clave "qsl-theme"). Sin preferencia guardada sigue al sistema.
 (function () {
   const root = document.documentElement, mq = matchMedia('(prefers-color-scheme: light)');
-  let choice = null;
-  try { choice = localStorage.getItem('qsl-theme'); } catch {}
+  let choice = null, en = !/^es/i.test(navigator.language || '');
+  try { choice = localStorage.getItem('qsl-theme'); const l = localStorage.getItem('qsl-lang'); if (l) en = l === 'en'; } catch {}
+  const setLang = () => { root.lang = en ? 'en' : 'es'; };
   function apply() {
+    setLang();
     root.dataset.theme = choice || (mq.matches ? 'light' : 'dark');
-    document.querySelectorAll('.themeBtn').forEach(b => b.textContent = root.dataset.theme === 'light' ? '🌙 Tema oscuro' : '☀️ Tema claro');
+    document.querySelectorAll('.themeBtn:not(.langBtn)').forEach(b => b.textContent = en ? (root.dataset.theme === 'light' ? '🌙 Dark theme' : '☀️ Light theme') : (root.dataset.theme === 'light' ? '🌙 Tema oscuro' : '☀️ Tema claro'));
+    document.querySelectorAll('.langBtn').forEach(b => b.textContent = en ? '🌐 Español' : '🌐 English');
+    document.title = en ? 'User manual - QSL Generator' : 'Manual de usuario - Generador de QSL';
   }
   window.toggleTheme = () => {
     choice = root.dataset.theme === 'light' ? 'dark' : 'light';
     try { localStorage.setItem('qsl-theme', choice); } catch {}
     apply();
   };
+  // Idioma compartido con index.html (clave "qsl-lang")
+  window.toggleLang = () => {
+    en = !en;
+    try { localStorage.setItem('qsl-lang', en ? 'en' : 'es'); } catch {}
+    apply();
+  };
   mq.addEventListener('change', apply);
-  addEventListener('storage', e => { if (e.key === 'qsl-theme') { choice = e.newValue; apply(); } });   // cambiado en otra pestaña
+  addEventListener('storage', e => {
+    if (e.key === 'qsl-theme') { choice = e.newValue; apply(); }
+    if (e.key === 'qsl-lang' && e.newValue) { en = e.newValue === 'en'; apply(); }
+  });   // cambiado en otra pestaña
   document.addEventListener('DOMContentLoaded', apply);
   apply();
 })();
@@ -87,14 +101,15 @@
 <body>
 
 <header>
-  <img src="https://lh3.googleusercontent.com/pw/AP1GczPC239LM2GKhSzLFpe1-l9issPxvTSNrqt3_lHJvdRoeR0q8iaQD1yT0QevrOj8bpB9LdnXhFZAeI8YD3-00EGVRnBgO5z1TWkz1oQ4sN9gxDDu_u8RK4_DZDZzWioS8zwDOiuBcTKUqR0376hMQXLVlg=w384-h250-s-no-gm" width="60" height="40" >
-  <h1>📖 Manual de usuario · Generador de QSL</h1>
+  <img src="post-card.png" width="50" height="50" alt="Logo Post Card">
+  <h1><span lang="es">📖 Manual de usuario · Generador de QSL</span><span lang="en">📖 User manual · QSL Generator</span></h1>
   <span class="spacer"></span>
+  <button class="langBtn themeBtn" onclick="toggleLang()"></button>
   <button class="themeBtn" onclick="toggleTheme()"></button>
-  <a class="btn" href="index.html">← Volver al generador</a>
+  <a class="btn" href="index.html"><span lang="es">← Volver al generador</span><span lang="en">← Back to the generator</span></a>
 </header>
 
-<div class="layout">
+<div class="layout" lang="es">
   <nav>
     <b>Contenido</b>
     <ol>
@@ -114,7 +129,7 @@
 
   <article>
     <section>
-      <p class="intro">El Generador de QSL de la Liga de Radioaficionados de Medellín crea tarjetas QSL electrónicas a partir de tu log en formato ADIF, te deja personalizar su diseño, busca el nombre y el correo de cada corresponsal en QRZ.com y envía las QSL por Gmail. Este manual explica cada paso en el mismo orden en que aparece en la pantalla.</p>
+      <p class="intro">El Generador Web de QSL crea tarjetas QSL electrónicas a partir de tu log en formato ADIF, te deja personalizar su diseño, busca el nombre y el correo de cada corresponsal en QRZ.com y envía las QSL por Gmail. Este manual explica cada paso en el mismo orden en que aparece en la pantalla.</p>
       <h3>Flujo de trabajo resumido</h3>
       <ol>
         <li>Entra con tu indicativo.</li>
@@ -126,30 +141,13 @@
       </ol>
     </section>
 
-    <!-- <section id="inicio">
-      <h2>1. Puesta en marcha</h2>
-      <p>La aplicación funciona en tu navegador, pero la consulta a QRZ y el envío de correos pasan por un pequeño servidor local escrito en Python.</p>
-      <h3>Requisitos</h3>
-      <ul>
-        <li>Python 3.8 o superior instalado.</li>
-        <li>Un navegador moderno: Chrome, Edge, Firefox o Safari.</li>
-        <li>Conexión a internet para las fuentes, QRZ y Gmail.</li>
-      </ul>
-      <h3>Cómo iniciarla</h3>
-      <ul>
-        <li><b>Windows:</b> haz doble clic en <code>iniciar.bat</code>. Abre el navegador en <code>http://localhost:8000</code> y arranca el servidor.</li>
-        <li><b>Cualquier sistema:</b> en la carpeta de la aplicación ejecuta <code>python server.py</code> y abre <a href="http://localhost:8000">http://localhost:8000</a>.</li>
-      </ul>
-      <p>Deja abierta la ventana del servidor mientras usas la aplicación. Para cerrarlo pulsa <kbd>Ctrl</kbd>+<kbd>C</kbd> en esa ventana o ciérrala.</p>
-      <div class="note warn">Si abres <code>index.html</code> con doble clic, como archivo local, verás un aviso rojo. En ese modo puedes diseñar y descargar, pero QRZ, Gmail y los logos predefinidos no funcionan.</div>
-    </section> -->
-
     <section id="acceso">
       <h2>1. Acceso por indicativo</h2>
       <p>Al abrir la aplicación escribe tu indicativo, por ejemplo <code>HK4AAA</code>, y pulsa <b>Entrar</b> o <kbd>Enter</kbd>. No hace falta contraseña: el indicativo solo separa tus datos de los de otros indicativos que usen el mismo navegador.</p>
       <ul>
         <li>La próxima vez que abras la página entrarás directamente con el último indicativo usado.</li>
         <li><b>☀️ Tema claro / 🌙 Tema oscuro</b> cambia la apariencia de la aplicación y del manual. Al principio se usa el tema de tu sistema; el que elijas queda guardado en el navegador, incluso después de usar <b>Borrar todo</b>. El tema no cambia el diseño de la QSL.</li>
+        <li><b>🌐 English / Español</b> cambia el idioma de la interfaz, del manual y de los textos por defecto de la QSL. Se recuerda en el navegador y los textos que hayas editado no se modifican. Los nombres de las variables, como <code>{NOMBRE}</code>, no se traducen para que los diseños guardados sigan funcionando.</li>
         <li><b>Cambiar indicativo</b>, arriba a la derecha, guarda tu trabajo y vuelve a la pantalla de acceso. Tus datos siguen guardados.</li>
         <li><b>🗑 Borrar todo</b> elimina los datos de <i>todos</i> los indicativos guardados en este navegador. Esta acción no se puede deshacer.</li>
       </ul>
@@ -324,11 +322,9 @@
     </section>
 
     <section id="problemas">
-      <h2>11. Solución de problemas</h2>
+      <h2>10. Solución de problemas</h2>
       <div class="tableWrap"><table>
         <tr><th>Problema</th><th>Solución</th></tr>
-        <tr><td>Aviso rojo “Abriste la página como archivo local”</td><td>Ejecuta <code>python server.py</code> o <code>iniciar.bat</code> y entra a <code>http://localhost:8000</code>.</td></tr>
-        <!--<tr><td>“No se pudo contactar al servidor local”</td><td>La ventana del servidor se cerró o mostró un error. Vuelve a iniciarla.</td></tr>-->
         <tr><td>“No se encontraron contactos en el archivo”</td><td>Verifica que el archivo sea ADIF (<code>.adi</code>/<code>.adif</code>) y que tenga registros con <code>CALL</code>.</td></tr>
         <tr><td>QRZ: “Session Timeout” o “Invalid session key”</td><td>El Session ID caducó o es incorrecto. Genera uno nuevo.</td></tr>
         <tr><td>QRZ devuelve el nombre pero “sin correo”</td><td>El corresponsal no publica su correo o tu suscripción no lo incluye. Puedes descargar esa QSL y enviarla por otro medio.</td></tr>
@@ -342,7 +338,236 @@
   </article>
 </div>
 
-<footer>Generador de QSL · Creado por HK4Q · 73!</footer>
+<div class="layout" lang="en">
+  <nav>
+    <b>Contents</b>
+    <ol>
+      <li><a href="#acceso-en">Signing in with your callsign</a></li>
+      <li><a href="#adif-en">ADIF file</a></li>
+      <li><a href="#estacion-en">My station</a></li>
+      <li><a href="#diseno-en">QSL design</a></li>
+      <li><a href="#variables-en">Variables</a></li>
+      <li><a href="#contactos-en">Contacts and downloads</a></li>
+      <li><a href="#qrz-en">QRZ.com lookup</a></li>
+      <li><a href="#gmail-en">Sending by Gmail</a></li>
+      <li><a href="#datos-en">Privacy and data</a> · <a href="#respaldo-en">another computer</a></li>
+      <li><a href="#problemas-en">Troubleshooting</a></li>
+    </ol>
+  </nav>
+
+  <article>
+    <section>
+      <p class="intro">The QSL Generator Web App creates electronic QSL cards from your ADIF log, lets you customize their design, looks up each correspondent's name and email on QRZ.com and sends the QSLs by Gmail. This manual explains each step in the same order it appears on screen.</p>
+      <h3>Workflow summary</h3>
+      <ol>
+        <li>Sign in with your callsign.</li>
+        <li>Load your ADIF file.</li>
+        <li>Fill in your station data.</li>
+        <li>Design the QSL: background, logos, texts and table.</li>
+        <li>Look up the selected contacts on QRZ.</li>
+        <li>Send the QSLs by email, or download them.</li>
+      </ol>
+      <div class="note">The <b>🌐 English / Español</b> button switches the interface and the default QSL texts (card labels, table headings, email message) between English and Spanish. The language you choose is remembered in the browser. Texts you have edited yourself are never changed. Variable names such as <code>{NOMBRE}</code> stay the same in both languages so saved designs keep working.</div>
+    </section>
+
+    <section id="acceso-en">
+      <h2>1. Signing in with your callsign</h2>
+      <p>When you open the application, type your callsign, for example <code>HK4LRM</code>, and press <b>Enter</b> (button) or <kbd>Enter</kbd>. No password is needed: the callsign only keeps your data separate from that of other callsigns using the same browser.</p>
+      <ul>
+        <li>Next time you open the page you will go straight in with the last callsign used.</li>
+        <li><b>☀️ Light theme / 🌙 Dark theme</b> changes the look of the application and of the manual. At first your system theme is used; the one you choose is saved in the browser, even after using <b>Delete all</b>. The theme does not change the QSL design.</li>
+        <li><b>🌐 English / Español</b> switches the language of the interface, the manual and the default QSL texts.</li>
+        <li><b>Change callsign</b>, at the top right, saves your work and returns to the sign-in screen. Your data stays saved.</li>
+        <li><b>🗑 Delete all</b> removes the data of <i>all</i> callsigns saved in this browser. This cannot be undone.</li>
+      </ul>
+    </section>
+
+    <section id="adif-en">
+      <h2>2. ADIF file</h2>
+      <p>Export your log from your logging program (Log4OM, N1MM, WSJT-X, HRD, QRZ Logbook, etc.) in <code>.adi</code> or <code>.adif</code> format. Then drag the file onto the <b>1. ADIF file</b> box, or click the box to choose it.</p>
+      <ul>
+        <li>The contacts appear in the <b>Contacts</b> table, all selected.</li>
+        <li>If the ADIF includes your data (<code>MY_GRIDSQUARE</code>, <code>MY_CITY</code>, <code>MY_RIG</code>, etc.), it is copied to <b>My station</b> without erasing what you have already typed.</li>
+        <li>The correspondent's name is taken from the ADIF <code>NAME_INTL</code> or <code>NAME</code> fields and used in <code>{NOMBRE}</code> and <code>{NOMBRE_COMPLETO}</code>. The <b>Name</b> column marks it with <span style="color:var(--muted)">(ADIF)</span>. If you later query QRZ, the QRZ name is used instead.</li>
+        <li>If a contact has its email in the ADIF <code>EMAIL</code> field, it is used directly for sending. The <b>Email</b> column marks it with <span style="color:var(--muted)">(ADIF)</span> and that callsign does not need a QRZ lookup.</li>
+        <li>Loading a new file replaces the previous list of contacts.</li>
+      </ul>
+    </section>
+
+    <section id="estacion-en">
+      <h2>3. My station</h2>
+      <p>This data is printed on the QSL through variables such as <code>{MI_NOMBRE}</code> or <code>{RIG}</code>. Fill in what you want to show: if a value is empty, the corresponding part disappears automatically from the text.</p>
+      <div class="tableWrap"><table>
+        <tr><th>Field</th><th>Use</th></tr>
+        <tr><td>My callsign, Name</td><td>Your callsign and name as they will appear on the card.</td></tr>
+        <tr><td>QTH, Country, Grid, CQ zone, ITU zone</td><td>Location of your station.</td></tr>
+        <tr><td>Equipment, Antenna, Power</td><td>If you leave Power empty, it is taken from each QSO in the ADIF (<code>TX_PWR</code>).</td></tr>
+        <tr><td>Date format</td><td>How dates are shown: <code>2025-02-22</code>, <code>22/02/2025</code>, <code>22-FEB-2025</code> or <code>02/22/2025</code>.</td></tr>
+        <tr><td>Extra text</td><td>Free text available as <code>{EXTRA}</code>, for example “LRM member #1234”.</td></tr>
+      </table></div>
+    </section>
+
+    <section id="diseno-en">
+      <h2>4. QSL design</h2>
+      <p>The card is 1240 × 797 pixels. The <b>Preview</b> shows the contact selected in the table, or a sample contact if you have not loaded an ADIF yet.</p>
+
+      <h3>Background image</h3>
+      <p>Click <b>Upload background image</b> or drag an image onto the box. It is cropped and fitted to the card size automatically. The <b>✕</b> button removes it and returns to the default background.</p>
+      <div class="note">Use a landscape image of at least 1240 × 797 pixels so it looks sharp. If the image is very heavy it may not fit in the browser's storage; in that case you will see a warning and will have to upload it again after reloading.</div>
+
+      <h3>Logos and icons</h3>
+      <ul>
+        <li><b>Logos:</b> click a logo in the grid to add it to the QSL; click again to remove it. Active ones are marked with ✓.</li>
+        <li><b>My icons:</b> upload your own images, preferably PNG with a transparent background. They are reduced to 500 px at most and kept in your browser. The small ✕ on each icon deletes it.</li>
+      </ul>
+
+      <h3>Elements</h3>
+      <p>The QSL is made of elements: <i>My callsign</i>, <i>Station info</i>, <i>To (QSO with)</i>, <i>QSO table</i>, <i>Footer</i>, plus the logos, icons and texts you add.</p>
+      <ul>
+        <li><b>Select:</b> click the element in the preview or its button in the list. It is highlighted with an orange frame.</li>
+        <li><b>Move:</b> drag it with the mouse or your finger, or type its X and Y coordinates in the editor.</li>
+        <li><b>Resize images:</b> drag the small orange square at the bottom right corner.</li>
+        <li><b>Hide:</b> press <kbd>Del</kbd> or <kbd>Backspace</kbd> with the element selected, or untick <b>Visible</b>. Logos and icons are removed from the QSL; turn them on again from their grid.</li>
+        <li><b>Deselect:</b> click an empty area of the background.</li>
+      </ul>
+
+      <h3>Editor options</h3>
+      <ul>
+        <li><b>Texts:</b> content (supports several lines and variables), size, font, alignment, bold, color, and outline color and width.</li>
+        <li><b>QSO table:</b> size, width, font, data, heading and background colors, background opacity and the columns to show (Callsign, Date, UTC time, Frequency, Band, Mode, RST sent and received).</li>
+        <li><b>Images:</b> position, width and opacity.</li>
+      </ul>
+      <p><b>+ Add text</b> creates a new text in the center of the card, which you can delete from the editor. <b>Reset design</b> returns the texts and the table to their original design and keeps the logos and icons.</p>
+    </section>
+
+    <section id="variables-en">
+      <h2>5. Variables</h2>
+      <p>Variables are written between braces and replaced with each contact's data. To insert them, click the text field where you want them and then the variable in the <b>Available variables</b> list. They work in the QSL texts and in the email subject and message. The variable names are the same in both languages (they are not translated).</p>
+      <div class="tableWrap"><table>
+        <tr><th>Variable</th><th>Content</th></tr>
+        <tr><td><code>{MI_INDICATIVO}</code> <code>{MI_NOMBRE}</code></td><td>Your callsign and your name.</td></tr>
+        <tr><td><code>{MI_QTH}</code> <code>{MI_PAIS}</code> <code>{MI_GRID}</code></td><td>Your city, country and grid square.</td></tr>
+        <tr><td><code>{CQ}</code> <code>{ITU}</code></td><td>Your CQ and ITU zones.</td></tr>
+        <tr><td><code>{RIG}</code> <code>{ANTENA}</code> <code>{POTENCIA}</code></td><td>Your equipment, antenna and power.</td></tr>
+        <tr><td><code>{EXTRA}</code></td><td>The extra text from My station.</td></tr>
+        <tr><td><code>{CALL}</code></td><td>Correspondent's callsign.</td></tr>
+        <tr><td><code>{NOMBRE}</code> <code>{NOMBRE_COMPLETO}</code></td><td>Correspondent's first name or full name, taken from QRZ or the ADIF. If there is no name, their callsign is used.</td></tr>
+        <tr><td><code>{FECHA}</code> <code>{HORA}</code></td><td>QSO date, in the chosen format, and UTC time.</td></tr>
+        <tr><td><code>{FREQ}</code> <code>{BANDA}</code> <code>{MODO}</code></td><td>Frequency in MHz, band and mode.</td></tr>
+        <tr><td><code>{RST_ENV}</code> <code>{RST_REC}</code></td><td>Reports sent and received.</td></tr>
+        <tr><td><code>{QTH}</code> <code>{GRID}</code> <code>{PAIS}</code></td><td>Correspondent's location.</td></tr>
+        <tr><td><code>{QSOS}</code></td><td>List of the contacts included in the email, one per line. Useful in the message.</td></tr>
+      </table></div>
+      <div class="note ok">In the QSL texts, parts separated by <code>·</code>, <code>|</code> or <code>,</code> whose variables are empty are removed automatically, as are lines left empty. This way labels such as “Ant:” never appear without a value.</div>
+    </section>
+
+    <section id="contactos-en">
+      <h2>6. Contacts and downloads</h2>
+      <ul>
+        <li><b>Select:</b> tick or untick the box on each row. The header box selects all visible contacts.</li>
+        <li><b>Preview:</b> click a row to see it in the preview.</li>
+        <li><b>Filter:</b> type part of a callsign, mode or band in <b>Filter…</b>.</li>
+        <li><b>⬇</b> on each row downloads that contact's QSL.</li>
+        <li><b>Download this QSL</b> downloads the QSL shown in the preview.</li>
+        <li><b>📋 Copy image</b> copies it to the clipboard so you can paste it into WhatsApp, Telegram or an email. It only works at <code>http://localhost:8000</code> or over https.</li>
+        <li><b>Download selected (ZIP)</b> generates a ZIP with the QSLs of all selected contacts.</li>
+      </ul>
+      <p>The <b>Status</b> column shows the sending result: <span style="color:var(--ok)">✓ Sent</span> or <span style="color:var(--err)">✗ Error</span>. Below the table there is a log of what is happening.</p>
+      <p>The file format, JPG or PNG, is chosen in <b>5. Send by Gmail → Image format</b>.</p>
+    </section>
+
+    <section id="qrz-en">
+      <h2>7. QRZ.com lookup</h2>
+      <p>QRZ provides the name and, if the correspondent has made it public, the email address to which the QSL will be sent.</p>
+      <h3>Getting the Session ID</h3>
+      <ol>
+        <li>You need a QRZ.com account with a subscription that includes <b>XML Logbook Data</b>. Without a subscription, QRZ returns limited data, normally without email.</li>
+        <li>Open in your browser, replacing your details:<br>
+          <code>https://xmldata.qrz.com/xml/current/?username=YOUR_CALLSIGN;password=YOUR_PASSWORD</code></li>
+        <li>Copy the value between <code>&lt;Key&gt;</code> and <code>&lt;/Key&gt;</code>. That is your Session ID.</li>
+      </ol>
+      <h3>Looking up</h3>
+      <ol>
+        <li>Paste the Session ID in <b>4. QRZ.com</b>. Tick <b>Remember the Session ID</b> if you want it saved in this browser.</li>
+        <li>Select the contacts in the table and press <b>Look up selected</b>.</li>
+        <li>The <b>Name</b> and <b>Email</b> columns are filled in. Repeated callsigns are queried only once.</li>
+      </ol>
+      <ul>
+        <li>Callsigns that already have an email in the ADIF <code>EMAIL</code> field are skipped. If all selected ones have it, the Session ID is not needed.</li>
+        <li>If a callsign has an email in both QRZ and the ADIF, the QRZ one is used.</li>
+        <li>Portable callsigns, such as <code>EA8/LU7YZ/P</code>, are retried with the base callsign if QRZ cannot find them.</li>
+        <li>Results are saved; <b>Clear cache</b> deletes them so they can be queried again.</li>
+      </ul>
+      <div class="note warn">The Session ID expires after a while. If a session error appears, generate a new one with step 2.</div>
+    </section>
+
+    <section id="gmail-en">
+      <h2>8. Sending by Gmail</h2>
+      <h3>Creating an app password</h3>
+      <p>Gmail does not accept your normal password from external programs. You need an <b>app password</b>:</p>
+      <ol>
+        <li>Turn on <b>2-Step Verification</b> in your Google account.</li>
+        <li>Go to <a href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">myaccount.google.com/apppasswords</a>.</li>
+        <li>Type a name, for example “QSL Generator”, and press <b>Create</b>.</li>
+        <li>Copy the 16-letter password Google shows you.</li>
+      </ol>
+      <h3>Setting up sending</h3>
+      <ol>
+        <li>Type your <b>Gmail account</b> and paste the <b>App password</b>. Press <b>Test</b> to check the connection.</li>
+        <li>Review the <b>Sender name</b>, <b>Subject</b> and <b>Message</b>. You can use variables; <code>{NOMBRE}</code> and <code>{QSOS}</code> are the most useful.</li>
+        <li>Choose the <b>Image format</b>: JPG is lighter, PNG has higher quality.</li>
+        <li>Options:
+          <ul>
+            <li><b>One email per callsign:</b> if you worked the same station several times, it receives a single email with all its QSLs attached.</li>
+            <li><b>Do not resend to those already sent:</b> skips contacts whose status is ✓ Sent.</li>
+          </ul>
+        </li>
+        <li>Press <b>Send QSLs by email</b> and confirm. Only the selected contacts that have an email, from the ADIF or from QRZ, are sent.</li>
+      </ol>
+      <div class="note">There is a 1.5-second pause between emails so as not to exceed Gmail's limits, which allow about 500 messages a day on personal accounts. If you send many QSLs, do it in batches.</div>
+    </section>
+
+    <section id="datos-en">
+      <h2>9. Privacy and data</h2>
+      <ul>
+        <li>Everything is stored only in <b>this browser</b>: contacts, design, background, icons and settings. The server stores nothing: there is no database or log with your data.</li>
+        <li>The QRZ Session ID and the Gmail password are saved only if you tick the <b>Remember</b> boxes. Otherwise they are forgotten when you close the page.</li>
+        <li>Since the data lives in the browser, it does not appear on another computer or browser, and it is lost if you clear your browsing data.</li>
+        <li>On a shared computer, use <b>🗑 Delete all</b> when you finish.</li>
+      </ul>
+      <h3 id="respaldo-en">Moving your settings to another computer</h3>
+      <p>In <b>6. Save / load settings</b> you can move your work to another computer or browser:</p>
+      <ol>
+        <li>On the source computer press <b>💾 Save settings</b>. A file <code>QSL_config_CALLSIGN_date.json</code> is downloaded.</li>
+        <li>Copy that file to the other computer, for example with a USB drive or by email.</li>
+        <li>On the other computer sign in with your callsign, press <b>📂 Load settings</b> and choose the file.</li>
+      </ol>
+      <p>The file always includes the station data, the complete design (background, logos, personal icons and texts) and the email settings (sender, subject, message and options). You can also tick:</p>
+      <ul>
+        <li><b>Include contacts, sending status and QRZ data:</b> to continue your work where you left off, without reloading the ADIF or querying QRZ again.</li>
+        <li><b>Include QRZ Session ID and Gmail password:</b> they are stored <b>unencrypted</b> in the file. Use this only if you keep the file somewhere safe.</li>
+      </ul>
+      <div class="note">When loading, the settings replace the current ones. If the file has no contacts or credentials, those you already had in that browser are kept. The predefined logos only appear if the other server has the same images in its <code>logos/</code> folder; personal icons do travel inside the file.</div>
+    </section>
+
+    <section id="problemas-en">
+      <h2>10. Troubleshooting</h2>
+      <div class="tableWrap"><table>
+        <tr><th>Problem</th><th>Solution</th></tr>
+        <tr><td>“No contacts were found in the file”</td><td>Check that the file is ADIF (<code>.adi</code>/<code>.adif</code>) and has records with <code>CALL</code>.</td></tr>
+        <tr><td>QRZ: “Session Timeout” or “Invalid session key”</td><td>The Session ID expired or is wrong. Generate a new one.</td></tr>
+        <tr><td>QRZ returns the name but “no email”</td><td>The correspondent does not publish their email or your subscription does not include it. You can download that QSL and send it by other means.</td></tr>
+        <tr><td>“Gmail rejected the username or app password”</td><td>Use an app password, not the normal one, and check that 2-Step Verification is active.</td></tr>
+        <tr><td>“Copy image” does not work</td><td>The clipboard requires <code>localhost</code> or https. Use <b>Download this QSL</b>.</td></tr>
+        <tr><td>The background disappears on reload</td><td>The image is too large for the browser's storage. Use a lighter image.</td></tr>
+        <tr><td>Predefined logos do not appear</td><td>Copy PNG, JPG, WebP, SVG or GIF images into the <code>logos/</code> folder and reload the page.</td></tr>
+        <tr><td>The ZIP is not generated</td><td>The JSZip library is loaded from the internet. Check your connection.</td></tr>
+      </table></div>
+    </section>
+  </article>
+</div>
+
+<footer><span lang="es">Generador de QSL · <a href="https://hk4q.net" target="_blank" rel="noopener">HK4Q</a> · 73!</span><span lang="en">QSL Generator · <a href="https://hk4q.net" target="_blank" rel="noopener">HK4Q</a> · 73!</span></footer>
 
 </body>
 </html>

@@ -99,11 +99,16 @@
 // sin preferencia guardada sigue al sistema. "qsl-theme" no empieza por "qslapp:", así que "Borrar todo" lo conserva.
 (function () {
   const root = document.documentElement, mq = matchMedia('(prefers-color-scheme: light)');
+  // Idioma: preferencia guardada ("qsl-lang", que "Borrar todo" conserva) o, si no hay, el del navegador
+  let lang = null;
+  try { lang = localStorage.getItem('qsl-lang'); } catch {}
+  root.lang = lang === 'es' || lang === 'es' ? lang : (/^es/i.test(navigator.language || '') ? 'es' : 'en');
   let choice = null;
   try { choice = localStorage.getItem('qsl-theme'); } catch {}
   function apply() {
     root.dataset.theme = choice || (mq.matches ? 'light' : 'dark');
-    document.querySelectorAll('.themeBtn').forEach(b => b.textContent = root.dataset.theme === 'light' ? '🌙 Tema oscuro' : '☀️ Tema claro');
+    const en = root.lang === 'en', light = root.dataset.theme === 'light';
+    document.querySelectorAll('.themeBtn').forEach(b => b.textContent = light ? (en ? '🌙 Dark theme' : '🌙 Tema oscuro') : (en ? '☀️ Light theme' : '☀️ Tema claro'));
   }
   window.toggleTheme = () => {
     choice = root.dataset.theme === 'light' ? 'dark' : 'light';
@@ -112,6 +117,7 @@
   };
   mq.addEventListener('change', apply);
   addEventListener('storage', e => { if (e.key === 'qsl-theme') { choice = e.newValue; apply(); } });   // cambiado en otra pestaña
+  window.refreshThemeBtn = apply;
   document.addEventListener('DOMContentLoaded', apply);
   apply();
 })();
@@ -122,29 +128,31 @@
 <!-- ====== Acceso por indicativo ====== -->
 <div id="login">
   <div class="card">
-    <img src="https://lh3.googleusercontent.com/pw/AP1GczPC239LM2GKhSzLFpe1-l9issPxvTSNrqt3_lHJvdRoeR0q8iaQD1yT0QevrOj8bpB9LdnXhFZAeI8YD3-00EGVRnBgO5z1TWkz1oQ4sN9gxDDu_u8RK4_DZDZzWioS8zwDOiuBcTKUqR0376hMQXLVlg=w384-h250-s-no-gm" width="250" height="163" >
-    <h1>📻 Generador de QSL 🖄</h1>
-    <p class="muted small">Ingresa tu indicativo para comenzar. Tus datos se guardan solo en este navegador, nunca en el servidor. Tú decides si también se recuerdan el Session ID de QRZ y la contraseña de Gmail.</p>
-    <p class="muted small">Creado por HK4Q</p>
+    <img src="post-card.png" width="250" height="163" >
+    <h1 data-i18n="login.title">📻 Generador de QSL 🖄</h1>
+    <p class="muted small" data-i18n="login.intro">Ingresa tu indicativo para comenzar. Tus datos se guardan solo en este navegador, nunca en el servidor. Tú decides si también se recuerdan el Session ID de QRZ y la contraseña de Gmail.</p>
+    <p class="muted small" data-i18n="credit">Creado por HK4Q</p>
     <input id="loginCall" type="text" placeholder="HK4AAA" autocomplete="off" maxlength="15">
-    <button class="primary" id="loginBtn" style="width:100%">Entrar</button>
-    <p class="small" style="margin:14px 0 0"><a href="manual.html" target="_blank">📖 Manual de usuario</a></p>
+    <button class="primary" id="loginBtn" style="width:100%" data-i18n="login.enter">Entrar</button>
+    <p class="small" style="margin:14px 0 0"><a href="manual.html" target="_blank" data-i18n="manual">📖 Manual de usuario</a></p>
     <button class="themeBtn small" onclick="toggleTheme()" style="margin-top:10px"></button>
+    <button class="langBtn small" onclick="toggleLang()" style="margin-top:10px"></button>
   </div>
 </div>
 
 <header>
-  <img src="https://lh3.googleusercontent.com/pw/AP1GczPC239LM2GKhSzLFpe1-l9issPxvTSNrqt3_lHJvdRoeR0q8iaQD1yT0QevrOj8bpB9LdnXhFZAeI8YD3-00EGVRnBgO5z1TWkz1oQ4sN9gxDDu_u8RK4_DZDZzWioS8zwDOiuBcTKUqR0376hMQXLVlg=w384-h250-s-no-gm" width="82" height="54" >
-  <h1>Generador de QSL - </h1>
+  <img src="post-card.png" width="82" height="54" >
+  <h1 data-i18n="hdr.title">Generador de QSL - </h1>
   <span class="call" id="hdrCall"></span>
   <span class="spacer"></span>
   <span class="muted small" id="saveInfo"></span>
-  <a href="manual.html" target="_blank">📖 Manual de usuario</a>
+  <a href="manual.html" target="_blank" data-i18n="manual">📖 Manual de usuario</a>
   <button class="themeBtn" onclick="toggleTheme()"></button>
-  <button id="logoutBtn">Cambiar indicativo</button>
-  <button id="resetAllBtn" style="border-color:var(--err);color:var(--danger)">🗑 Borrar todo</button>
+  <button class="langBtn" onclick="toggleLang()"></button>
+  <button id="logoutBtn" data-i18n="hdr.change">Cambiar indicativo</button>
+  <button id="resetAllBtn" data-i18n="hdr.reset" style="border-color:var(--err);color:var(--danger)">🗑 Borrar todo</button>
 </header>
-<div id="fileWarn" class="banner" style="display:none">
+<div id="fileWarn" class="banner" style="display:none" data-i18n-html="fileWarn">
   Abriste la página como archivo local. La consulta a QRZ y el envío de correos necesitan el servidor: ejecuta <code>python server.py</code> y entra a <a href="http://localhost:8000">http://localhost:8000</a>.
 </div>
 
@@ -152,9 +160,9 @@
   <aside>
     <!-- 1. ADIF -->
     <details open>
-      <summary>1. Archivo ADIF</summary>
+      <summary data-i18n="s1">1. Archivo ADIF</summary>
       <div class="body">
-        <div class="drop" id="adifDrop">Arrastra aquí tu archivo <b>.adi / .adif</b> o haz clic para elegirlo
+        <div class="drop" id="adifDrop"><span data-i18n-html="adif.drop">Arrastra aquí tu archivo <b>.adi / .adif</b> o haz clic para elegirlo</span>
           <input type="file" id="adifFile" accept=".adi,.adif,.txt" hidden></div>
         <p class="small muted" id="adifInfo" style="margin:8px 0 0"></p>
       </div>
@@ -162,61 +170,61 @@
 
     <!-- 2. Estación -->
     <details open>
-      <summary>2. Mi estación</summary>
+      <summary data-i18n="s2">2. Mi estación</summary>
       <div class="body">
         <div class="row">
-          <div><label>Mi indicativo</label><input type="text" data-k="station.call" style="text-transform:uppercase"></div>
-          <div><label>Nombre</label><input type="text" data-k="station.name"></div>
+          <div><label data-i18n="st.call">Mi indicativo</label><input type="text" data-k="station.call" style="text-transform:uppercase"></div>
+          <div><label data-i18n="st.name">Nombre</label><input type="text" data-k="station.name"></div>
         </div>
         <div class="row">
-          <div><label>QTH / Ciudad</label><input type="text" data-k="station.qth"></div>
-          <div><label>País</label><input type="text" data-k="station.country"></div>
+          <div><label data-i18n="st.qth">QTH / Ciudad</label><input type="text" data-k="station.qth"></div>
+          <div><label data-i18n="st.country">País</label><input type="text" data-k="station.country"></div>
         </div>
         <div class="row">
           <div><label>Grid</label><input type="text" data-k="station.grid"></div>
-          <div><label>Zona CQ</label><input type="text" data-k="station.cq"></div>
-          <div><label>Zona ITU</label><input type="text" data-k="station.itu"></div>
+          <div><label data-i18n="st.cq">Zona CQ</label><input type="text" data-k="station.cq"></div>
+          <div><label data-i18n="st.itu">Zona ITU</label><input type="text" data-k="station.itu"></div>
         </div>
         <div class="row">
-          <div><label>Equipo (Rig)</label><input type="text" data-k="station.rig"></div>
-          <div><label>Antena</label><input type="text" data-k="station.ant"></div>
+          <div><label data-i18n="st.rig">Equipo (Rig)</label><input type="text" data-k="station.rig"></div>
+          <div><label data-i18n="st.ant">Antena</label><input type="text" data-k="station.ant"></div>
         </div>
         <div class="row">
-          <div><label>Potencia (W)</label><input type="text" data-k="station.pwr" placeholder="del ADIF"></div>
-          <div><label>Formato de fecha</label>
+          <div><label data-i18n="st.pwr">Potencia (W)</label><input type="text" data-k="station.pwr" placeholder="del ADIF" data-i18n-ph="st.pwr.ph"></div>
+          <div><label data-i18n="st.date">Formato de fecha</label>
             <select data-k="station.dateFmt">
               <option value="ymd">2025-02-22</option><option value="dmy">22/02/2025</option>
               <option value="dMy">22-FEB-2025</option><option value="mdy">02/22/2025</option>
             </select></div>
         </div>
-        <label>Texto extra ({EXTRA})</label><input type="text" data-k="station.extra" placeholder="Ej: Miembro LCRA #1234">
+        <label data-i18n="st.extra">Texto extra ({EXTRA})</label><input type="text" data-k="station.extra" placeholder="Ej: Miembro LCRA #1234" data-i18n-ph="st.extra.ph">
       </div>
     </details>
 
     <!-- 3. Diseño -->
     <details open>
-      <summary>3. Diseño de la QSL</summary>
+      <summary data-i18n="s3">3. Diseño de la QSL</summary>
       <div class="body">
-        <label>Imagen de fondo (se ajusta a 1240×797)</label>
+        <label data-i18n="bg.label">Imagen de fondo (se ajusta a 1240×797)</label>
         <div class="row">
-          <div class="drop" id="bgDrop" style="padding:10px">Subir imagen de fondo
+          <div class="drop" id="bgDrop" style="padding:10px"><span data-i18n="bg.upload">Subir imagen de fondo</span>
             <input type="file" id="bgFile" accept="image/*" hidden></div>
-          <button class="auto" id="bgClear" title="Quitar fondo">✕</button>
+          <button class="auto" id="bgClear" title="Quitar fondo" data-i18n-title="bg.clear">✕</button>
         </div>
-        <label style="margin-top:12px">Logos (clic para activar o desactivar)</label>
-        <div class="logoGrid" id="logoGrid"><span class="small muted">Cargando…</span></div>
-        <label>Mis iconos (PNG con transparencia recomendado)</label>
-        <div class="drop" id="iconDrop" style="padding:10px">Subir iconos personales
+        <label style="margin-top:12px" data-i18n="logos.label">Logos (clic para activar o desactivar)</label>
+        <div class="logoGrid" id="logoGrid"><span class="small muted" data-i18n="logos.loading">Cargando…</span></div>
+        <label data-i18n="icons.label">Mis iconos (PNG con transparencia recomendado)</label>
+        <div class="drop" id="iconDrop" style="padding:10px"><span data-i18n="icons.upload">Subir iconos personales</span>
           <input type="file" id="iconFile" accept="image/*" multiple hidden></div>
         <div class="logoGrid" id="myIconGrid" style="margin-top:6px"></div>
-        <label style="margin-top:12px">Elementos (haz clic o arrástralos en la vista previa; las imágenes se redimensionan desde la esquina; Supr o Retroceso desactiva el seleccionado)</label>
+        <label style="margin-top:12px" data-i18n="el.hint">Elementos (haz clic o arrástralos en la vista previa; las imágenes se redimensionan desde la esquina; Supr o Retroceso desactiva el seleccionado)</label>
         <div class="elList" id="elList"></div>
         <div id="elEditor"></div>
         <div class="row" style="margin-top:10px">
-          <button id="addText">+ Añadir texto</button>
-          <button id="resetLayout">Restablecer diseño</button>
+          <button id="addText" data-i18n="addText">+ Añadir texto</button>
+          <button id="resetLayout" data-i18n="resetLayout">Restablecer diseño</button>
         </div>
-        <label>Variables disponibles (clic para insertar)</label>
+        <label data-i18n="vars.label">Variables disponibles (clic para insertar)</label>
         <div class="chips" id="chips"></div>
       </div>
     </details>
@@ -227,52 +235,52 @@
       <div class="body">
         <label>Session ID (s=…)</label>
         <input type="text" data-k="qrz.session" placeholder="p.ej. 2331uf894c4bd29f3923f3bacf02c532d7bd9">
-        <label class="inline"><input type="checkbox" data-k="qrz.remember"> Recordar el Session ID en este navegador</label>
-        <p class="small muted">Se consulta <code>xmldata.qrz.com/xml/?s=SESSION;callsign=CALL</code>. El correo solo lo entrega QRZ si tu suscripción XML lo incluye.</p>
-        <div class="row"><button id="qrzBtn" class="primary">Consultar seleccionados</button><button id="qrzClear" class="auto">Limpiar caché</button></div>
+        <label class="inline"><input type="checkbox" data-k="qrz.remember"> <span data-i18n="qrz.remember">Recordar el Session ID en este navegador</span></label>
+        <p class="small muted" data-i18n-html="qrz.help">Se consulta <code>xmldata.qrz.com/xml/?s=SESSION;callsign=CALL</code>. El correo solo lo entrega QRZ si tu suscripción XML lo incluye.</p>
+        <div class="row"><button id="qrzBtn" class="primary" data-i18n="qrz.btn">Consultar seleccionados</button><button id="qrzClear" class="auto" data-i18n="qrz.clear">Limpiar caché</button></div>
         <div class="progress" id="qrzProg"><div></div></div>
       </div>
     </details>
 
     <!-- 5. Correo -->
     <details>
-      <summary>5. Envío por Gmail</summary>
+      <summary data-i18n="s5">5. Envío por Gmail</summary>
       <div class="body">
         <div class="row">
-          <div><label>Cuenta Gmail</label><input type="email" data-k="mail.user" placeholder="tucorreo@gmail.com"></div>
+          <div><label data-i18n="mail.user">Cuenta Gmail</label><input type="email" data-k="mail.user" placeholder="tucorreo@gmail.com"></div>
         </div>
-        <label>Contraseña de aplicación</label>
+        <label data-i18n="mail.pass">Contraseña de aplicación</label>
         <div class="row">
           <input type="password" id="mailPass" data-k="mail.pass" placeholder="xxxx xxxx xxxx xxxx" autocomplete="off">
-          <button class="auto" id="mailTest">Probar</button>
+          <button class="auto" id="mailTest" data-i18n="mail.test">Probar</button>
         </div>
-        <label class="inline"><input type="checkbox" data-k="mail.rememberPass"> Recordar la contraseña en este navegador</label>
-        <label>Nombre del remitente</label><input type="text" data-k="mail.fromName">
-        <label>Asunto</label><input type="text" data-k="mail.subject">
-        <label>Mensaje</label><textarea data-k="mail.body" rows="9"></textarea>
-        <p class="small muted" style="margin:4px 0">Usa {NOMBRE} para el nombre que devuelve QRZ y {QSOS} para la lista de contactos.</p>
+        <label class="inline"><input type="checkbox" data-k="mail.rememberPass"> <span data-i18n="mail.rememberPass">Recordar la contraseña en este navegador</span></label>
+        <label data-i18n="mail.fromName">Nombre del remitente</label><input type="text" data-k="mail.fromName">
+        <label data-i18n="mail.subjectL">Asunto</label><input type="text" data-k="mail.subject">
+        <label data-i18n="mail.bodyL">Mensaje</label><textarea data-k="mail.body" rows="9"></textarea>
+        <p class="small muted" style="margin:4px 0" data-i18n="mail.vars">Usa {NOMBRE} para el nombre que devuelve QRZ y {QSOS} para la lista de contactos.</p>
         <div class="row">
-          <div><label>Formato de imagen</label>
-            <select data-k="mail.format"><option value="jpg">JPG (más liviano)</option><option value="png">PNG</option></select></div>
+          <div><label data-i18n="mail.format">Formato de imagen</label>
+            <select data-k="mail.format"><option value="jpg" data-i18n="mail.jpg">JPG (más liviano)</option><option value="png">PNG</option></select></div>
         </div>
-        <label class="inline"><input type="checkbox" data-k="mail.group"> Un solo correo por indicativo (todas sus QSL adjuntas)</label>
-        <label class="inline"><input type="checkbox" data-k="mail.skipSent"> No reenviar a los ya enviados</label>
-        <button id="sendBtn" class="primary" style="width:100%;margin-top:6px">Enviar QSL por correo</button>
+        <label class="inline"><input type="checkbox" data-k="mail.group"> <span data-i18n="mail.group">Un solo correo por indicativo (todas sus QSL adjuntas)</span></label>
+        <label class="inline"><input type="checkbox" data-k="mail.skipSent"> <span data-i18n="mail.skipSent">No reenviar a los ya enviados</span></label>
+        <button id="sendBtn" class="primary" style="width:100%;margin-top:6px" data-i18n="mail.send">Enviar QSL por correo</button>
         <div class="progress" id="sendProg"><div></div></div>
       </div>
     </details>
 
     <!-- 6. Respaldo -->
     <details>
-      <summary>6. Guardar / cargar configuración</summary>
+      <summary data-i18n="s6">6. Guardar / cargar configuración</summary>
       <div class="body">
-        <p class="small muted" style="margin:0 0 6px">Guarda en un archivo los datos de tu estación, el diseño de la QSL (fondo, logos, iconos y textos) y la configuración del correo, para cargarlos en otro computador o navegador.</p>
-        <label class="inline"><input type="checkbox" id="cfgQsos"> Incluir contactos, estado de envíos y datos de QRZ</label>
-        <label class="inline"><input type="checkbox" id="cfgSecrets"> Incluir Session ID de QRZ y contraseña de Gmail</label>
-        <p class="small" id="cfgSecretsWarn" style="display:none;margin:0 0 6px;color:white;background-color:red;text-align: center">⚠ Quedarán sin cifrar dentro del archivo. Guárdalo en un lugar seguro y no lo compartas.⚠</p>
+        <p class="small muted" style="margin:0 0 6px" data-i18n="cfg.help">Guarda en un archivo los datos de tu estación, el diseño de la QSL (fondo, logos, iconos y textos) y la configuración del correo, para cargarlos en otro computador o navegador.</p>
+        <label class="inline"><input type="checkbox" id="cfgQsos"> <span data-i18n="cfg.qsos">Incluir contactos, estado de envíos y datos de QRZ</span></label>
+        <label class="inline"><input type="checkbox" id="cfgSecrets"> <span data-i18n="cfg.secrets">Incluir Session ID de QRZ y contraseña de Gmail</span></label>
+        <p class="small" id="cfgSecretsWarn" data-i18n="cfg.warn" style="display:none;margin:0 0 6px;color:white;background-color:red;text-align: center">⚠ Quedarán sin cifrar dentro del archivo. Guárdalo en un lugar seguro y no lo compartas.⚠</p>
         <div class="row" style="margin-top:6px">
-          <button id="cfgSave">💾 Guardar configuración</button>
-          <button id="cfgLoad">📂 Cargar configuración</button>
+          <button id="cfgSave" data-i18n="cfg.save">💾 Guardar configuración</button>
+          <button id="cfgLoad" data-i18n="cfg.load">📂 Cargar configuración</button>
           <input type="file" id="cfgFile" accept=".json,application/json" hidden>
         </div>
       </div>
@@ -282,34 +290,34 @@
   <section style="display:flex;flex-direction:column;gap:16px;min-width:0">
     <div class="card">
       <div class="toolbar">
-        <h2>Vista previa</h2><span class="muted small" id="prevInfo"></span>
+        <h2 data-i18n="prev.title">Vista previa</h2><span class="muted small" id="prevInfo"></span>
         <span style="flex:1"></span>
-        <button id="dlOne">Descargar esta QSL</button>
-        <button id="copyOne" title="Copia la imagen para pegarla en WhatsApp, Telegram, un correo, etc.">📋 Copiar imagen</button>
+        <button id="dlOne" data-i18n="dlOne">Descargar esta QSL</button>
+        <button id="copyOne" data-i18n="copyOne" data-i18n-title="copyOne.title" title="Copia la imagen para pegarla en WhatsApp, Telegram, un correo, etc.">📋 Copiar imagen</button>
       </div>
-      <div class="canvasWrap"><canvas id="preview" width="1240" height="797" tabindex="0" title="Arrastra un elemento para moverlo; Supr o Retroceso lo desactiva"></canvas></div>
+      <div class="canvasWrap"><canvas id="preview" width="1240" height="797" tabindex="0" data-i18n-title="canvas.title" title="Arrastra un elemento para moverlo; Supr o Retroceso lo desactiva"></canvas></div>
     </div>
 
     <div class="card">
       <div class="toolbar">
-        <h2>Contactos</h2><span class="muted small" id="qsoCount"></span>
+        <h2 data-i18n="qso.title">Contactos</h2><span class="muted small" id="qsoCount"></span>
         <span style="flex:1"></span>
-        <input type="text" id="filter" placeholder="Filtrar…" style="width:160px">
-        <button id="dlZip">Descargar seleccionadas (ZIP)</button>
+        <input type="text" id="filter" placeholder="Filtrar…" data-i18n-ph="filter.ph" style="width:160px">
+        <button id="dlZip" data-i18n="dlZip">Descargar seleccionadas (ZIP)</button>
       </div>
       <div class="tableWrap">
         <table>
           <thead><tr>
-            <th><input type="checkbox" id="selAll"></th><th>Indicativo</th><th>Fecha</th><th>UTC</th><th>MHz</th>
-            <th>Banda</th><th>Modo</th><th>RST</th><th>Nombre</th><th>Correo</th><th>Estado</th><th></th>
+            <th><input type="checkbox" id="selAll"></th><th data-i18n="th.call">Indicativo</th><th data-i18n="th.date">Fecha</th><th>UTC</th><th>MHz</th>
+            <th data-i18n="th.band">Banda</th><th data-i18n="th.mode">Modo</th><th>RST</th><th data-i18n="th.name">Nombre</th><th data-i18n="th.mail">Correo</th><th data-i18n="th.status">Estado</th><th></th>
           </tr></thead>
-          <tbody id="qsoBody"><tr><td colspan="12" class="muted">Carga un archivo ADIF para ver los contactos.</td></tr></tbody>
+          <tbody id="qsoBody"><tr><td colspan="12" class="muted" data-i18n="qso.empty">Carga un archivo ADIF para ver los contactos.</td></tr></tbody>
         </table>
       </div>
       <div id="log"></div>
     </div>
     <div>
-        <p class="muted small" align="center">Creado por HK4Q</p>
+        <p class="muted small" align="center" data-i18n="credit">Creado por HK4Q</p>
     </div>
   </section>
 </main>
@@ -318,10 +326,17 @@
 'use strict';
 const W = 1240, H = 797;
 const FONTS = ['Agbalumo', 'Audiowide', 'Arial', 'Courier New', 'Mitr', 'Orbitron', 'Oswald', 'Rampart One', 'Readex Pro', 'Roboto Slab', 'Shalimar', 'Sour Gummy', 'Stylish','Times New Roman', 'Tourney'];
-const COLS = { call:'Indicativo', date:'Fecha', time:'Hora UTC', freq:'Frecuencia', band:'Banda', mode:'Modo', rst:'RST Env.', rstr:'RST Rec.' };
+const COLS = { call:1, date:1, time:1, freq:1, band:1, mode:1, rst:1, rstr:1 };   // solo las claves; los nombres salen de t('col.<clave>')
+const colName = k => t('col.' + k);
 const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-const VARS = ['MI_INDICATIVO','MI_NOMBRE','MI_QTH','MI_PAIS','MI_GRID','CQ','ITU','RIG','ANTENA','POTENCIA','EXTRA',
+const VARS_ES = ['MI_INDICATIVO','MI_NOMBRE','MI_QTH','MI_PAIS','MI_GRID','CQ','ITU','RIG','ANTENA','POTENCIA','EXTRA',
   'CALL','NOMBRE','NOMBRE_COMPLETO','FECHA','HORA','FREQ','BANDA','MODO','RST_ENV','RST_REC','QTH','GRID','PAIS','QSOS'];
+// Alias en inglés: valen igual que los nombres en español en cualquier plantilla
+const VAR_ALIAS = { MI_INDICATIVO:'MY_CALL', MI_NOMBRE:'MY_NAME', MI_QTH:'MY_QTH', MI_PAIS:'MY_COUNTRY', MI_GRID:'MY_GRID', ANTENA:'ANTENNA',
+  POTENCIA:'POWER', NOMBRE:'NAME', NOMBRE_COMPLETO:'FULL_NAME', FECHA:'DATE', HORA:'TIME', BANDA:'BAND', MODO:'MODE',
+  RST_ENV:'RST_SENT', RST_REC:'RST_RCVD', PAIS:'COUNTRY' };
+const VARS_EN = VARS_ES.map(v => VAR_ALIAS[v] || v);
+const varList = () => LANG() === 'en' ? VARS_EN : VARS_ES;
 const BANDS = [[1.8,2,'160m'],[3.5,4,'80m'],[5.06,5.45,'60m'],[7,7.3,'40m'],[10.1,10.15,'30m'],[14,14.35,'20m'],[18.068,18.168,'17m'],
   [21,21.45,'15m'],[24.89,24.99,'12m'],[28,29.7,'10m'],[50,54,'6m'],[144,148,'2m'],[420,450,'70cm']];
 
@@ -329,6 +344,282 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const titleCase = s => String(s || '').toLowerCase().replace(/(^|[\s\-'"(])(\p{L})/gu, (m, a, b) => a + b.toUpperCase());
+
+/* ================= Idioma (es / en) ================= */
+// El idioma vive en <html lang>; lo fija el script del <head> (preferencia guardada en "qsl-lang" o, si no hay, el idioma del navegador).
+const I18N = {
+es: {
+  'title': `Generador de QSL`,
+  'credit': `Creado por HK4Q`,
+  'login.title': `📻 Generador de QSL 🖄`,
+  'login.intro': `Ingresa tu indicativo para comenzar. Tus datos se guardan solo en este navegador, nunca en el servidor. Tú decides si también se recuerdan el Session ID de QRZ y la contraseña de Gmail.`,
+  'login.enter': `Entrar`,
+  'manual': `📖 Manual de usuario`,
+  'hdr.title': `Generador de QSL - `,
+  'hdr.change': `Cambiar indicativo`,
+  'hdr.reset': `🗑 Borrar todo`,
+  'fileWarn': `Abriste la página como archivo local. La consulta a QRZ y el envío de correos necesitan el servidor: ejecuta <code>python server.py</code> y entra a <a href="http://localhost:8000">http://localhost:8000</a>.`,
+  's1': `1. Archivo ADIF`,
+  'adif.drop': `Arrastra aquí tu archivo <b>.adi / .adif</b> o haz clic para elegirlo`,
+  's2': `2. Mi estación`,
+  'st.call': `Mi indicativo`, 'st.name': `Nombre`, 'st.qth': `QTH / Ciudad`, 'st.country': `País`,
+  'st.cq': `Zona CQ`, 'st.itu': `Zona ITU`, 'st.rig': `Equipo (Rig)`, 'st.ant': `Antena`,
+  'st.pwr': `Potencia (W)`, 'st.pwr.ph': `del ADIF`, 'st.date': `Formato de fecha`,
+  'st.extra': `Texto extra ({EXTRA})`, 'st.extra.ph': `Ej: Miembro LCRA #1234`,
+  's3': `3. Diseño de la QSL`,
+  'bg.label': `Imagen de fondo (se ajusta a 1240×797)`, 'bg.upload': `Subir imagen de fondo`, 'bg.clear': `Quitar fondo`,
+  'logos.label': `Logos (clic para activar o desactivar)`, 'logos.loading': `Cargando…`,
+  'icons.label': `Mis iconos (PNG con transparencia recomendado)`, 'icons.upload': `Subir iconos personales`,
+  'el.hint': `Elementos (haz clic o arrástralos en la vista previa; las imágenes se redimensionan desde la esquina; Supr o Retroceso desactiva el seleccionado)`,
+  'addText': `+ Añadir texto`, 'resetLayout': `Restablecer diseño`,
+  'vars.label': `Variables disponibles (clic para insertar)`,
+  'qrz.remember': `Recordar el Session ID en este navegador`,
+  'qrz.help': `Se consulta <code>xmldata.qrz.com/xml/?s=SESSION;callsign=CALL</code>. El correo solo lo entrega QRZ si tu suscripción XML lo incluye.`,
+  'qrz.btn': `Consultar seleccionados`, 'qrz.clear': `Limpiar caché`,
+  's5': `5. Envío por Gmail`,
+  'mail.user': `Cuenta Gmail`, 'mail.pass': `Contraseña de aplicación`, 'mail.test': `Probar`,
+  'mail.rememberPass': `Recordar la contraseña en este navegador`,
+  'mail.fromName': `Nombre del remitente`, 'mail.subjectL': `Asunto`, 'mail.bodyL': `Mensaje`,
+  'mail.vars': `Usa {NOMBRE} para el nombre que devuelve QRZ y {QSOS} para la lista de contactos.`,
+  'mail.format': `Formato de imagen`, 'mail.jpg': `JPG (más liviano)`,
+  'mail.group': `Un solo correo por indicativo (todas sus QSL adjuntas)`,
+  'mail.skipSent': `No reenviar a los ya enviados`, 'mail.send': `Enviar QSL por correo`,
+  's6': `6. Guardar / cargar configuración`,
+  'cfg.help': `Guarda en un archivo los datos de tu estación, el diseño de la QSL (fondo, logos, iconos y textos) y la configuración del correo, para cargarlos en otro computador o navegador.`,
+  'cfg.qsos': `Incluir contactos, estado de envíos y datos de QRZ`,
+  'cfg.secrets': `Incluir Session ID de QRZ y contraseña de Gmail`,
+  'cfg.warn': `⚠ Quedarán sin cifrar dentro del archivo. Guárdalo en un lugar seguro y no lo compartas.⚠`,
+  'cfg.save': `💾 Guardar configuración`, 'cfg.load': `📂 Cargar configuración`,
+  'prev.title': `Vista previa`, 'dlOne': `Descargar esta QSL`, 'copyOne': `📋 Copiar imagen`,
+  'copyOne.title': `Copia la imagen para pegarla en WhatsApp, Telegram, un correo, etc.`,
+  'canvas.title': `Arrastra un elemento para moverlo; Supr o Retroceso lo desactiva`,
+  'qso.title': `Contactos`, 'filter.ph': `Filtrar…`, 'dlZip': `Descargar seleccionadas (ZIP)`,
+  'th.call': `Indicativo`, 'th.date': `Fecha`, 'th.band': `Banda`, 'th.mode': `Modo`, 'th.name': `Nombre`, 'th.mail': `Correo`, 'th.status': `Estado`,
+  'qso.empty': `Carga un archivo ADIF para ver los contactos.`,
+  'col.call': `Indicativo`, 'col.date': `Fecha`, 'col.time': `Hora UTC`, 'col.freq': `Frecuencia`,
+  'col.band': `Banda`, 'col.mode': `Modo`, 'col.rst': `RST Env.`, 'col.rstr': `RST Rec.`,
+  'el.mycall': `Mi indicativo`, 'el.mycall.text': `{MI_INDICATIVO}`,
+  'el.station': `Datos de estación`,
+  'el.station.text': `{MI_NOMBRE}\n{MI_QTH}, {MI_PAIS}\nGrid {MI_GRID} · CQ {CQ} · ITU {ITU}\nRig: {RIG}  ·  Ant: {ANTENA}  ·  {POTENCIA} W\n{EXTRA}`,
+  'el.to': `Para (QSO con)`, 'el.to.text': `QSO con: {CALL}`,
+  'el.table': `Tabla del QSO`, 'el.footer': `Pie`, 'el.footer.text': `Gracias · 73!`,
+  'mail.subject': `QSL {MI_INDICATIVO} - {CALL} - {FECHA}`,
+  'mail.body': `Hola {NOMBRE},\n\nMuchas gracias por el contacto. Adjunto mi QSL electrónica confirmando:\n\n{QSOS}\n\nEspero volver a encontrarte en las bandas.\n\n73 de {MI_INDICATIVO}\n{MI_NOMBRE}\n{MI_QTH}, {MI_PAIS}\n\nGenerado y enviado desde: <a href="https://qslgen.hk4q.net">QSLGen Web App</a>`,
+  'saved': `Datos guardados en este navegador`,
+  'bgTooBig': `⚠ Fondo demasiado grande para guardarlo (se perderá al recargar)`,
+  'badCall': `Indicativo no válido`,
+  'adif.none': `No se encontraron contactos en el archivo.`,
+  'adif.withName': `{n} con nombre`, 'adif.withMail': `{n} con correo`,
+  'adif.loaded': `Cargados {n} contactos de {f}`, 'adif.extra': ` ({x} en el ADIF)`,
+  'adif.info': `{f}: {n} contactos`,
+  'sample': `(contacto de ejemplo)`,
+  'log.removed': `"{l}" quitado de la QSL (vuelve a activarlo en la cuadrícula de logos/iconos)`,
+  'log.disabled': `"{l}" desactivado (márcalo como "Visible" para mostrarlo de nuevo)`,
+  'icon.del': `Eliminar icono`,
+  'logos.none': `No hay logos (copia imágenes en la carpeta logos/ del servidor).`,
+  'confirm.reset': `¿Restablecer los textos y la tabla al diseño original? (los logos e iconos se conservan)`,
+  'ed.none': `Ningún elemento seleccionado. Haz clic en uno de la vista previa o de la lista para editarlo.`,
+  'ed.name': `Nombre del elemento`, 'ed.visible': `Visible`, 'ed.width': `Ancho`, 'ed.opacity': `Opacidad`,
+  'ed.removeFromQsl': `Quitar de la QSL`, 'ed.deleteEl': `Eliminar elemento`, 'ed.text': `Texto`,
+  'ed.size': `Tamaño`, 'ed.font': `Fuente`, 'ed.align': `Alineación`, 'ed.bold': `Negrita`, 'ed.color': `Color`,
+  'ed.border': `Borde`, 'ed.borderW': `Grosor borde`, 'ed.titles': `Títulos`, 'ed.bg': `Fondo`,
+  'ed.bgOpacity': `Opacidad fondo`, 'ed.cols': `Columnas`, 'ed.newLabel': `Texto`, 'ed.newText': `Nuevo texto`,
+  'align.left': `Izquierda`, 'align.center': `Centro`, 'align.right': `Derecha`,
+  'qso.count': `{a} contactos · {b} seleccionados`, 'qso.noMail': `sin correo`, 'qso.dl': `Descargar QSL`,
+  'st.sent': `✓ Enviado`, 'st.sending': `Enviando…`,
+  'copy.unsupported': `Tu navegador no permite copiar imágenes desde esta dirección.\nAbre la app en http://localhost:8000 (o por https), o usa "Descargar esta QSL".`,
+  'copy.ok': `✓ Copiada`, 'copy.log': `QSL de {c} copiada al portapapeles`,
+  'copy.fail': `✗ No se pudo copiar`, 'copy.logErr': `Portapapeles: `,
+  'noSel': `No hay contactos seleccionados.`,
+  'zip.noLib': `No se pudo cargar JSZip (revisa la conexión a internet).`,
+  'zip.done': `ZIP generado con {n} QSL`,
+  'api.status': `Servidor respondió {s}`, 'api.error': `Error {s}`,
+  'err.gmail': `Gmail rechazó el usuario o la contraseña de aplicación`,
+  'srv.unreachable': `No se pudo contactar al servidor local. ¿Está corriendo server.py?`,
+  'qrz.skipped': `QRZ: {n} indicativo(s) omitidos porque ya tienen correo en el ADIF`,
+  'qrz.allHave': `Todos los contactos seleccionados ya tienen correo en el ADIF; no hace falta consultar QRZ.`,
+  'qrz.needSession': `Ingresa el Session ID de QRZ.`,
+  'qrz.noMail': ` (sin correo)`, 'qrz.noData': `sin datos`, 'qrz.checkSession': `Revisa el Session ID.`,
+  'qrz.done': `Consulta QRZ terminada: {ok}/{n} encontrados`,
+  'mail.need': `Escribe la cuenta Gmail y la contraseña de aplicación.`,
+  'mail.ok': `Conexión con Gmail correcta`,
+  'send.none': `Ningún contacto seleccionado tiene correo (ni en el ADIF ni en QRZ). Consulta primero QRZ.`,
+  'send.noMailN': `({n} seleccionados sin correo)`,
+  'send.confirm': `Se enviarán {g} correo(s) con {n} QSL desde {u}.`,
+  'send.skipN': `{n} seleccionados no tienen correo y se omitirán.`,
+  'continue': `¿Continuar?`,
+  'send.sentTo': `Enviado a {c} <{to}> ({n} QSL)`, 'send.errWith': `Error con {c}: {m}`,
+  'send.done': `Envío terminado: {ok}/{n} correos`,
+  'img.readBg': `No se pudo leer la imagen.`, 'img.readErr': `No se pudo leer`,
+  'cfg.saved': `Configuración guardada`, 'cfg.withQsos': ` con contactos`, 'cfg.withSecrets': ` (incluye credenciales)`,
+  'cfg.badJson': `El archivo no es una configuración válida (JSON dañado).`,
+  'cfg.notOurs': `El archivo no es una configuración del Generador de QSL.`,
+  'cfg.newer': `Esta configuración es de una versión más nueva del generador. Actualiza la aplicación.`,
+  'cfg.p1': `• Datos de la estación`, 'cfg.p2': `• Diseño de la QSL (fondo, logos, iconos y textos)`, 'cfg.p3': `• Configuración del correo`,
+  'cfg.p4': `• {n} contactos y datos de QRZ (reemplazan los actuales)`,
+  'cfg.p5': `• Session ID de QRZ y/o contraseña de Gmail`,
+  'cfg.from': `\n\nEl archivo es del indicativo {a}; se cargará en {b}.`,
+  'cfg.confirm': `Se reemplazará la configuración actual de {c} con:`,
+  'cfg.loaded': `Configuración cargada desde {f}`,
+  'confirm.wipe': `⚠ ATENCIÓN: se borrarán TODOS los datos guardados en este navegador:\n\n• Contactos cargados del ADIF y estado de los envíos\n• Datos de la estación, diseño de la QSL, fondo e iconos personales\n• Session ID de QRZ y datos consultados\n• Cuenta de Gmail, contraseña de aplicación y mensaje del correo\n\nEsta acción no se puede deshacer. ¿Deseas continuar?`,
+},
+en: {
+  'title': `QSL Generator`,
+  'credit': `Created by HK4Q`,
+  'login.title': `📻 QSL Generator 🖄`,
+  'login.intro': `Enter your callsign to get started. Your data is stored only in this browser, never on the server. You decide whether the QRZ Session ID and the Gmail password are remembered too.`,
+  'login.enter': `Enter`,
+  'manual': `📖 User manual`,
+  'hdr.title': `QSL Generator - `,
+  'hdr.change': `Change callsign`,
+  'hdr.reset': `🗑 Delete all`,
+  'fileWarn': `You opened the page as a local file. The QRZ lookup and email sending need the server: run <code>python server.py</code> and go to <a href="http://localhost:8000">http://localhost:8000</a>.`,
+  's1': `1. ADIF file`,
+  'adif.drop': `Drag your <b>.adi / .adif</b> file here or click to choose it`,
+  's2': `2. My station`,
+  'st.call': `My callsign`, 'st.name': `Name`, 'st.qth': `QTH / City`, 'st.country': `Country`,
+  'st.cq': `CQ zone`, 'st.itu': `ITU zone`, 'st.rig': `Equipment (Rig)`, 'st.ant': `Antenna`,
+  'st.pwr': `Power (W)`, 'st.pwr.ph': `from ADIF`, 'st.date': `Date format`,
+  'st.extra': `Extra text ({EXTRA})`, 'st.extra.ph': `E.g.: LCRA member #1234`,
+  's3': `3. QSL design`,
+  'bg.label': `Background image (fitted to 1240×797)`, 'bg.upload': `Upload background image`, 'bg.clear': `Remove background`,
+  'logos.label': `Logos (click to turn on or off)`, 'logos.loading': `Loading…`,
+  'icons.label': `My icons (PNG with transparency recommended)`, 'icons.upload': `Upload personal icons`,
+  'el.hint': `Elements (click or drag them in the preview; images are resized from the corner; Delete or Backspace turns off the selected one)`,
+  'addText': `+ Add text`, 'resetLayout': `Reset design`,
+  'vars.label': `Available variables (click to insert)`,
+  'qrz.remember': `Remember the Session ID in this browser`,
+  'qrz.help': `Queries <code>xmldata.qrz.com/xml/?s=SESSION;callsign=CALL</code>. QRZ only provides the email if your XML subscription includes it.`,
+  'qrz.btn': `Look up selected`, 'qrz.clear': `Clear cache`,
+  's5': `5. Send via Gmail`,
+  'mail.user': `Gmail account`, 'mail.pass': `App password`, 'mail.test': `Test`,
+  'mail.rememberPass': `Remember the password in this browser`,
+  'mail.fromName': `Sender name`, 'mail.subjectL': `Subject`, 'mail.bodyL': `Message`,
+  'mail.vars': `Use {NAME} for the name returned by QRZ and {QSOS} for the list of contacts.`,
+  'mail.format': `Image format`, 'mail.jpg': `JPG (lighter)`,
+  'mail.group': `One email per callsign (all its QSLs attached)`,
+  'mail.skipSent': `Do not resend to those already sent`, 'mail.send': `Send QSL by email`,
+  's6': `6. Save / load settings`,
+  'cfg.help': `Saves to a file your station data, the QSL design (background, logos, icons and texts) and the email settings, so you can load them on another computer or browser.`,
+  'cfg.qsos': `Include contacts, send status and QRZ data`,
+  'cfg.secrets': `Include QRZ Session ID and Gmail password`,
+  'cfg.warn': `⚠ They will be stored unencrypted in the file. Keep it somewhere safe and do not share it.⚠`,
+  'cfg.save': `💾 Save settings`, 'cfg.load': `📂 Load settings`,
+  'prev.title': `Preview`, 'dlOne': `Download this QSL`, 'copyOne': `📋 Copy image`,
+  'copyOne.title': `Copies the image so you can paste it into WhatsApp, Telegram, an email, etc.`,
+  'canvas.title': `Drag an element to move it; Delete or Backspace turns it off`,
+  'qso.title': `Contacts`, 'filter.ph': `Filter…`, 'dlZip': `Download selected (ZIP)`,
+  'th.call': `Callsign`, 'th.date': `Date`, 'th.band': `Band`, 'th.mode': `Mode`, 'th.name': `Name`, 'th.mail': `Email`, 'th.status': `Status`,
+  'qso.empty': `Load an ADIF file to see the contacts.`,
+  'col.call': `Callsign`, 'col.date': `Date`, 'col.time': `UTC time`, 'col.freq': `Frequency`,
+  'col.band': `Band`, 'col.mode': `Mode`, 'col.rst': `RST Sent`, 'col.rstr': `RST Rcvd`,
+  'el.mycall': `My callsign`, 'el.mycall.text': `{MY_CALL}`,
+  'el.station': `Station info`,
+  'el.station.text': `{MY_NAME}\n{MY_QTH}, {MY_COUNTRY}\nGrid {MY_GRID} · CQ {CQ} · ITU {ITU}\nRig: {RIG}  ·  Ant: {ANTENNA}  ·  {POWER} W\n{EXTRA}`,
+  'el.to': `To (QSO with)`, 'el.to.text': `QSO with: {CALL}`,
+  'el.table': `QSO table`, 'el.footer': `Footer`, 'el.footer.text': `Thanks · 73!`,
+  'mail.subject': `QSL {MY_CALL} - {CALL} - {DATE}`,
+  'mail.body': `Hello {NAME},\n\nThank you very much for the contact. Attached is my electronic QSL confirming:\n\n{QSOS}\n\nI hope to meet you again on the bands.\n\n73 from {MY_CALL}\n{MY_NAME}\n{MY_QTH}, {MY_COUNTRY}\n\nGenerated and sent from: <a href="https://qslgen.hk4q.net">QSLGen Web App</a>`,
+  'saved': `Data saved in this browser`,
+  'bgTooBig': `⚠ Background too large to save (it will be lost on reload)`,
+  'badCall': `Invalid callsign`,
+  'adif.none': `No contacts were found in the file.`,
+  'adif.withName': `{n} with name`, 'adif.withMail': `{n} with email`,
+  'adif.loaded': `Loaded {n} contacts from {f}`, 'adif.extra': ` ({x} in the ADIF)`,
+  'adif.info': `{f}: {n} contacts`,
+  'sample': `(sample contact)`,
+  'log.removed': `"{l}" removed from the QSL (turn it on again in the logos/icons grid)`,
+  'log.disabled': `"{l}" turned off (check "Visible" to show it again)`,
+  'icon.del': `Delete icon`,
+  'logos.none': `No logos (copy images into the logos/ folder on the server).`,
+  'confirm.reset': `Reset the texts and the table to the original design? (logos and icons are kept)`,
+  'ed.none': `No element selected. Click one in the preview or in the list to edit it.`,
+  'ed.name': `Element name`, 'ed.visible': `Visible`, 'ed.width': `Width`, 'ed.opacity': `Opacity`,
+  'ed.removeFromQsl': `Remove from QSL`, 'ed.deleteEl': `Delete element`, 'ed.text': `Text`,
+  'ed.size': `Size`, 'ed.font': `Font`, 'ed.align': `Alignment`, 'ed.bold': `Bold`, 'ed.color': `Color`,
+  'ed.border': `Border`, 'ed.borderW': `Border width`, 'ed.titles': `Headings`, 'ed.bg': `Background`,
+  'ed.bgOpacity': `Background opacity`, 'ed.cols': `Columns`, 'ed.newLabel': `Text`, 'ed.newText': `New text`,
+  'align.left': `Left`, 'align.center': `Center`, 'align.right': `Right`,
+  'qso.count': `{a} contacts · {b} selected`, 'qso.noMail': `no email`, 'qso.dl': `Download QSL`,
+  'st.sent': `✓ Sent`, 'st.sending': `Sending…`,
+  'copy.unsupported': `Your browser does not allow copying images from this address.\nOpen the app at http://localhost:8000 (or over https), or use "Download this QSL".`,
+  'copy.ok': `✓ Copied`, 'copy.log': `QSL for {c} copied to the clipboard`,
+  'copy.fail': `✗ Could not copy`, 'copy.logErr': `Clipboard: `,
+  'noSel': `No contacts selected.`,
+  'zip.noLib': `Could not load JSZip (check your internet connection).`,
+  'zip.done': `ZIP generated with {n} QSL`,
+  'api.status': `Server responded {s}`, 'api.error': `Error {s}`,
+  'err.gmail': `Gmail rejected the username or app password`,
+  'srv.unreachable': `Could not reach the local server. Is server.py running?`,
+  'qrz.skipped': `QRZ: {n} callsign(s) skipped because they already have an email in the ADIF`,
+  'qrz.allHave': `All selected contacts already have an email in the ADIF; there is no need to query QRZ.`,
+  'qrz.needSession': `Enter the QRZ Session ID.`,
+  'qrz.noMail': ` (no email)`, 'qrz.noData': `no data`, 'qrz.checkSession': `Check the Session ID.`,
+  'qrz.done': `QRZ lookup finished: {ok}/{n} found`,
+  'mail.need': `Enter the Gmail account and the app password.`,
+  'mail.ok': `Gmail connection successful`,
+  'send.none': `No selected contact has an email (neither in the ADIF nor in QRZ). Look them up on QRZ first.`,
+  'send.noMailN': `({n} selected without email)`,
+  'send.confirm': `{g} email(s) with {n} QSL will be sent from {u}.`,
+  'send.skipN': `{n} selected have no email and will be skipped.`,
+  'continue': `Continue?`,
+  'send.sentTo': `Sent to {c} <{to}> ({n} QSL)`, 'send.errWith': `Error with {c}: {m}`,
+  'send.done': `Sending finished: {ok}/{n} emails`,
+  'img.readBg': `Could not read the image.`, 'img.readErr': `Could not read`,
+  'cfg.saved': `Settings saved`, 'cfg.withQsos': ` with contacts`, 'cfg.withSecrets': ` (includes credentials)`,
+  'cfg.badJson': `The file is not a valid settings file (corrupted JSON).`,
+  'cfg.notOurs': `The file is not a QSL Generator settings file.`,
+  'cfg.newer': `These settings are from a newer version of the generator. Update the application.`,
+  'cfg.p1': `• Station data`, 'cfg.p2': `• QSL design (background, logos, icons and texts)`, 'cfg.p3': `• Email settings`,
+  'cfg.p4': `• {n} contacts and QRZ data (they replace the current ones)`,
+  'cfg.p5': `• QRZ Session ID and/or Gmail password`,
+  'cfg.from': `\n\nThe file belongs to callsign {a}; it will be loaded into {b}.`,
+  'cfg.confirm': `The current settings of {c} will be replaced with:`,
+  'cfg.loaded': `Settings loaded from {f}`,
+  'confirm.wipe': `⚠ WARNING: ALL data saved in this browser will be deleted:\n\n• Contacts loaded from the ADIF and send status\n• Station data, QSL design, background and personal icons\n• QRZ Session ID and looked-up data\n• Gmail account, app password and email message\n\nThis action cannot be undone. Do you want to continue?`,
+},
+};
+const LANG = () => document.documentElement.lang === 'en' ? 'en' : 'es';
+const T = (k, lang = LANG()) => I18N[lang][k];
+const t = (k, p) => {
+  const s = T(k) ?? I18N.es[k] ?? k;
+  return p ? s.replace(/\{(\w+)\}/g, (m, n) => n in p ? p[n] : m) : s;
+};
+// Los estados guardados ('✓ Enviado', 'Enviando…') son los códigos internos; aquí se muestran en el idioma activo.
+const statusText = s => s === '✓ Enviado' ? t('st.sent') : s === 'Enviando…' ? t('st.sending') : s;
+
+function applyLang() {
+  document.title = t('title');
+  document.querySelectorAll('[data-i18n]').forEach(e => e.textContent = t(e.dataset.i18n));
+  document.querySelectorAll('[data-i18n-html]').forEach(e => e.innerHTML = t(e.dataset.i18nHtml));
+  document.querySelectorAll('[data-i18n-ph]').forEach(e => e.placeholder = t(e.dataset.i18nPh));
+  document.querySelectorAll('[data-i18n-title]').forEach(e => e.title = t(e.dataset.i18nTitle));
+  document.querySelectorAll('.langBtn').forEach(b => b.textContent = LANG() === 'en' ? '🌐 Español' : '🌐 English');
+  renderChips();
+  if (window.refreshThemeBtn) window.refreshThemeBtn();
+}
+// Textos y plantillas que siguen siendo los de fábrica de otro idioma pasan al idioma activo; lo editado por el usuario no se toca.
+function migrateDefaults() {
+  if (!state) return;
+  const cur = LANG(), nd = defaultElements(cur);
+  for (const other of Object.keys(I18N)) {
+    if (other === cur) continue;
+    const od = defaultElements(other);
+    state.elements.forEach(el => {
+      const i = od.findIndex(x => x.id === el.id); if (i < 0) return;
+      if (el.label === od[i].label) el.label = nd[i].label;
+      if (el.type === 'text' && el.text === od[i].text) el.text = nd[i].text;
+    });
+    ['subject', 'body'].forEach(k => { if (state.mail[k] === T('mail.' + k, other)) state.mail[k] = T('mail.' + k, cur); });
+  }
+}
+function setLang(l) {
+  document.documentElement.lang = l;
+  try { localStorage.setItem('qsl-lang', l); } catch {}
+  applyLang();
+  if (state) { migrateDefaults(); bindForm(); renderElList(); renderEditor(); renderTable(); draw(); persist(); }
+}
+window.toggleLang = () => setLang(LANG() === 'en' ? 'es' : 'en');
 
 /* ================= Estado ================= */
 let state = null;        // todo lo que se guarda en localStorage
@@ -339,13 +630,14 @@ let drag = null;
 let logos = [];          // nombres de archivo en logos/ (servidor)
 const imgCache = {};     // src -> Image ya cargada
 
-function defaultElements() {
+function defaultElements(lang = LANG()) {
+  const L = k => T(k, lang);
   return [
-    { id:'mycall', label:'Mi indicativo', type:'text', text:'{MI_INDICATIVO}', x:60, y:40, size:140, font:'Readex Pro', bold:true, color:'#ffffff', stroke:4, strokeColor:'#000000', align:'left', visible:true },
-    { id:'station', label:'Datos de estación', type:'text', text:'{MI_NOMBRE}\n{MI_QTH}, {MI_PAIS}\nGrid {MI_GRID} · CQ {CQ} · ITU {ITU}\nRig: {RIG}  ·  Ant: {ANTENA}  ·  {POTENCIA} W\n{EXTRA}', x:64, y:190, size:28, font:'Readex Pro', bold:true, color:'#b7d1d7', stroke:3, strokeColor:'#174763', align:'left', visible:true },
-    { id:'to', label:'Para (QSO con)', type:'text', text:'QSO con: {CALL}', x:1180, y:440, size:56, font:'Stylish', bold:true, color:'#b7d1d7', stroke:4, strokeColor:'#174763', align:'right', visible:true },
-    { id:'table', label:'Tabla del QSO', type:'table', x:60, y:560, width:1120, size:28, font:'Stylish', bold:true, color:'#111111', headColor:'#555555', bg:'#ffffff', bgAlpha:0.85, cols:['date','time','freq','band','mode','rst'], visible:true },
-    { id:'footer', label:'Pie', type:'text', text:'Gracias · 73!', x:1180, y:720, size:34, font:'Shalimar', bold:false, color:'#ffffff', stroke:3, strokeColor:'#000000', align:'right', visible:true },
+    { id:'mycall', label:L('el.mycall'), type:'text', text:L('el.mycall.text'), x:60, y:40, size:140, font:'Readex Pro', bold:true, color:'#ffffff', stroke:4, strokeColor:'#000000', align:'left', visible:true },
+    { id:'station', label:L('el.station'), type:'text', text:L('el.station.text'), x:64, y:190, size:28, font:'Readex Pro', bold:true, color:'#b7d1d7', stroke:3, strokeColor:'#174763', align:'left', visible:true },
+    { id:'to', label:L('el.to'), type:'text', text:L('el.to.text'), x:1180, y:440, size:56, font:'Stylish', bold:true, color:'#b7d1d7', stroke:4, strokeColor:'#174763', align:'right', visible:true },
+    { id:'table', label:L('el.table'), type:'table', x:60, y:560, width:1120, size:28, font:'Stylish', bold:true, color:'#111111', headColor:'#555555', bg:'#ffffff', bgAlpha:0.85, cols:['date','time','freq','band','mode','rst'], visible:true },
+    { id:'footer', label:L('el.footer'), type:'text', text:L('el.footer.text'), x:1180, y:720, size:34, font:'Agbalumo', bold:false, color:'#ffffff', stroke:3, strokeColor:'#000000', align:'right', visible:true },
   ];
 }
 
@@ -358,8 +650,8 @@ function defaultState(call) {
     qrz: { session:'', remember:true, cache:{} },
     mail: {
       user:'', pass:'', rememberPass:true, fromName:call, format:'jpg', group:true, skipSent:true,
-      subject:'QSL {MI_INDICATIVO} - {CALL} - {FECHA}',
-      body:'Hola {NOMBRE},\n\nMuchas gracias por el contacto. Adjunto mi QSL electrónica confirmando:\n\n{QSOS}\n\nEspero volver a encontrarte en las bandas.\n\n73 de {MI_INDICATIVO}\n{MI_NOMBRE}\n{MI_QTH}, {MI_PAIS}\n\nGenerado y enviado desde: <a href="https://qslgen.hk4q.net">QSLGen Web App</a>',
+      subject:T('mail.subject'),
+      body:T('mail.body'),
     },
     bg: null,
     icons: [],   // iconos personales: { id, name, src (dataURL) }
@@ -380,11 +672,11 @@ function persist() {
   };
   try {
     localStorage.setItem(key(state.call), JSON.stringify(data));
-    $('#saveInfo').textContent = 'Datos guardados en este navegador';
+    $('#saveInfo').textContent = t('saved');
   } catch (e) {
     // Si la imagen de fondo no cabe, guardamos el resto
     try { localStorage.setItem(key(state.call), JSON.stringify({ ...data, bg:null })); } catch {}
-    $('#saveInfo').textContent = '⚠ Fondo demasiado grande para guardarlo (se perderá al recargar)';
+    $('#saveInfo').textContent = t('bgTooBig');
   }
 }
 function save() {
@@ -394,12 +686,13 @@ function save() {
 
 function login(call) {
   call = call.trim().toUpperCase();
-  if (!/^[A-Z0-9\/]{3,15}$/.test(call)) { alert('Indicativo no válido'); return; }
+  if (!/^[A-Z0-9\/]{3,15}$/.test(call)) { alert(t('badCall')); return; }
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem(key(call))); localStorage.setItem('qslapp:last', call); } catch {}
   const d = defaultState(call);
   state = saved ? { ...d, ...saved, station:{...d.station, ...saved.station}, qrz:{...d.qrz, ...saved.qrz}, mail:{...d.mail, ...saved.mail} } : d;
   sel = 0;
+  migrateDefaults();
   $('#hdrCall').textContent = call;
   $('#login').style.display = 'none';
   loadBg(state.bg);
@@ -437,7 +730,7 @@ function parseADIF(buf) {
 
 async function loadAdif(file) {
   const recs = parseADIF(await file.arrayBuffer());
-  if (!recs.length) { alert('No se encontraron contactos en el archivo.'); return; }
+  if (!recs.length) { alert(t('adif.none')); return; }
   state.qsos = recs.map((r, i) => ({ ...r, call:r.call.toUpperCase(), _id:i, _sel:true, _status:'' }));
   state.fileName = file.name; state.preview = 0;
   // Completa datos de mi estación con lo que traiga el ADIF, sin sobrescribir lo ya escrito
@@ -450,8 +743,8 @@ async function loadAdif(file) {
   s.rig ||= f.my_rig || ''; s.ant ||= f.my_antenna || '';
   bindForm(); renderTable(); draw(); save();
   const nMail = state.qsos.filter(adifEmail).length, nName = state.qsos.filter(adifName).length;
-  const extra = [nName && `${nName} con nombre`, nMail && `${nMail} con correo`].filter(Boolean).join(', ');
-  log(`Cargados ${recs.length} contactos de ${file.name}${extra ? ` (${extra} en el ADIF)` : ''}`, 'ok');
+  const extra = [nName && t('adif.withName', { n:nName }), nMail && t('adif.withMail', { n:nMail })].filter(Boolean).join(', ');
+  log(t('adif.loaded', { n:recs.length, f:file.name }) + (extra ? t('adif.extra', { x:extra }) : ''), 'ok');
 }
 
 /* ================= Variables ================= */
@@ -494,7 +787,7 @@ function qsoLine(q) {
 
 function vars(q, group) {
   const s = state.station, c = state.qrz.cache[q.call] || {};
-  return {
+  const base = {
     MI_INDICATIVO: (s.call || state.call).toUpperCase(), MI_NOMBRE: s.name, MI_QTH: s.qth, MI_PAIS: s.country,
     MI_GRID: s.grid, CQ: s.cq, ITU: s.itu, RIG: s.rig, ANTENA: s.ant, POTENCIA: s.pwr || q.tx_pwr || '', EXTRA: s.extra,
     CALL: q.call, NOMBRE: qrzName(q, false), NOMBRE_COMPLETO: qrzName(q, true),
@@ -503,6 +796,8 @@ function vars(q, group) {
     QTH: titleCase(c.addr2 || q.qth || ''), GRID: (c.grid || q.gridsquare || '').toUpperCase(), PAIS: titleCase(c.country || q.country || ''),
     QSOS: (group || [q]).map(qsoLine).join('\n'),
   };
+  for (const [es, en] of Object.entries(VAR_ALIAS)) base[en] = base[es];
+  return base;
 }
 
 // Reemplaza {VAR}. Con dropEmpty (textos de la QSL) quita los tramos separados por "·", "|" o ","
@@ -590,7 +885,7 @@ function drawTable(ctx, el, v) {
   cols.forEach((k, i) => {
     const cx = el.x + cw * i + cw / 2;
     ctx.font = fontStr(el, hh, false); ctx.fillStyle = el.headColor;
-    ctx.fillText(COLS[k].toUpperCase(), cx, el.y + pad);
+    ctx.fillText(colName(k).toUpperCase(), cx, el.y + pad);
     ctx.font = fontStr(el, el.size, el.bold); ctx.fillStyle = el.color;
     ctx.fillText(vals[k] || '—', cx, el.y + pad + hh * 1.3);
     if (i) {
@@ -655,7 +950,7 @@ function draw() {
   if (!state) return;
   bounds = render(pctx, previewQso(), true);
   const q = previewQso();
-  $('#prevInfo').textContent = q === SAMPLE ? '(contacto de ejemplo)' : `${q.call} · ${fmtDate(q.qso_date, state.station.dateFmt)} ${fmtTime(q.time_on)}`;
+  $('#prevInfo').textContent = q === SAMPLE ? t('sample') : `${q.call} · ${fmtDate(q.qso_date, state.station.dateFmt)} ${fmtTime(q.time_on)}`;
 }
 
 function qslCanvas(q) {
@@ -720,10 +1015,10 @@ document.addEventListener('keydown', e => {
   e.preventDefault();
   if (el.type === 'image') {
     state.elements.splice(sel, 1); sel = -1;
-    log(`"${el.label}" quitado de la QSL (vuelve a activarlo en la cuadrícula de logos/iconos)`, 'info');
+    log(t('log.removed', { l:el.label }), 'info');
   } else {
     el.visible = false;
-    log(`"${el.label}" desactivado (márcalo como "Visible" para mostrarlo de nuevo)`, 'info');
+    log(t('log.disabled', { l:el.label }), 'info');
   }
   renderElList(); renderEditor(); draw(); save();
 });
@@ -739,10 +1034,10 @@ function renderElList() {
 function renderLogoGrids() {
   const on = new Set(state.elements.filter(el => el.type === 'image').map(el => el.src));
   const cell = (src, thumb, name, rm) => `<div class="logo ${on.has(src) ? 'on' : ''}" data-src="${esc(src)}" title="${esc(name)}">
-    <img src="${esc(thumb)}" alt="${esc(name)}">${rm ? `<button class="icon" data-rm="${esc(rm)}" title="Eliminar icono" style="position:absolute;bottom:-4px;right:-4px;font-size:11px;background:var(--panel2);border-radius:50%;padding:0 4px">✕</button>` : ''}</div>`;
+    <img src="${esc(thumb)}" alt="${esc(name)}">${rm ? `<button class="icon" data-rm="${esc(rm)}" title="${esc(t('icon.del'))}" style="position:absolute;bottom:-4px;right:-4px;font-size:11px;background:var(--panel2);border-radius:50%;padding:0 4px">✕</button>` : ''}</div>`;
   $('#logoGrid').innerHTML = logos.length
     ? logos.map(n => cell('logos/' + encodeURIComponent(n), 'logos/' + encodeURIComponent(n), n.replace(/\.\w+$/, ''))).join('')
-    : '<span class="small muted">No hay logos (copia imágenes en la carpeta logos/ del servidor).</span>';
+    : `<span class="small muted">${esc(t('logos.none'))}</span>`;
   $('#myIconGrid').innerHTML = state.icons.map(ic => cell('icon:' + ic.id, ic.src, ic.name, ic.id)).join('');
 }
 
@@ -793,7 +1088,7 @@ function addIconFile(file) {
     addImage('icon:' + ic.id, ic.name);
     renderElList(); renderEditor(); draw(); save();
   };
-  img.onerror = () => alert('No se pudo leer ' + file.name);
+  img.onerror = () => alert(t('img.readErr') + ' ' + file.name);
   img.src = URL.createObjectURL(file);
 }
 $('#elList').addEventListener('click', e => {
@@ -803,47 +1098,47 @@ $('#elList').addEventListener('click', e => {
 
 function renderEditor() {
   const el = state.elements[sel];
-  if (!el) { $('#elEditor').innerHTML = '<p class="small muted" style="margin:4px 0">Ningún elemento seleccionado. Haz clic en uno de la vista previa o de la lista para editarlo.</p>'; return; }
+  if (!el) { $('#elEditor').innerHTML = `<p class="small muted" style="margin:4px 0">${esc(t('ed.none'))}</p>`; return; }
   const fontOpts = FONTS.map(f => `<option ${f === el.font ? 'selected' : ''}>${f}</option>`).join('');
-  let h = `<div class="row"><div><label>Nombre del elemento</label><input type="text" data-e="label" value="${esc(el.label)}"></div>
-    <label class="inline auto" style="margin-bottom:8px"><input type="checkbox" data-e="visible" ${el.visible ? 'checked' : ''}> Visible</label></div>`;
+  let h = `<div class="row"><div><label>${t('ed.name')}</label><input type="text" data-e="label" value="${esc(el.label)}"></div>
+    <label class="inline auto" style="margin-bottom:8px"><input type="checkbox" data-e="visible" ${el.visible ? 'checked' : ''}> ${t('ed.visible')}</label></div>`;
   if (el.type === 'image') {
     $('#elEditor').innerHTML = h + `<div class="row">
       <div><label>X</label><input type="number" data-e="x" value="${el.x}"></div>
       <div><label>Y</label><input type="number" data-e="y" value="${el.y}"></div>
-      <div><label>Ancho</label><input type="number" data-e="w" min="20" max="1240" value="${el.w}"></div>
-      <div><label>Opacidad</label><input type="number" data-e="opacity" min="0" max="1" step="0.05" value="${el.opacity}"></div>
-    </div><button id="delEl" style="margin-top:8px">Quitar de la QSL</button>`;
+      <div><label>${t('ed.width')}</label><input type="number" data-e="w" min="20" max="1240" value="${el.w}"></div>
+      <div><label>${t('ed.opacity')}</label><input type="number" data-e="opacity" min="0" max="1" step="0.05" value="${el.opacity}"></div>
+    </div><button id="delEl" style="margin-top:8px">${t('ed.removeFromQsl')}</button>`;
     return;
   }
-  if (el.type === 'text') h += `<label>Texto</label><textarea data-e="text" rows="4">${esc(el.text)}</textarea>`;
+  if (el.type === 'text') h += `<label>${t('ed.text')}</label><textarea data-e="text" rows="4">${esc(el.text)}</textarea>`;
   h += `<div class="row">
       <div><label>X</label><input type="number" data-e="x" value="${el.x}"></div>
       <div><label>Y</label><input type="number" data-e="y" value="${el.y}"></div>
-      <div><label>Tamaño</label><input type="number" data-e="size" min="8" max="400" value="${el.size}"></div>
-      ${el.type === 'table' ? `<div><label>Ancho</label><input type="number" data-e="width" value="${el.width}"></div>` : ''}
+      <div><label>${t('ed.size')}</label><input type="number" data-e="size" min="8" max="400" value="${el.size}"></div>
+      ${el.type === 'table' ? `<div><label>${t('ed.width')}</label><input type="number" data-e="width" value="${el.width}"></div>` : ''}
     </div>
     <div class="row">
-      <div><label>Fuente</label><select data-e="font">${fontOpts}</select></div>
-      ${el.type === 'text' ? `<div><label>Alineación</label><select data-e="align">
-        ${['left','center','right'].map(a => `<option value="${a}" ${a === el.align ? 'selected' : ''}>${{left:'Izquierda',center:'Centro',right:'Derecha'}[a]}</option>`).join('')}</select></div>` : ''}
-      <label class="inline auto" style="margin-bottom:8px"><input type="checkbox" data-e="bold" ${el.bold ? 'checked' : ''}> Negrita</label>
+      <div><label>${t('ed.font')}</label><select data-e="font">${fontOpts}</select></div>
+      ${el.type === 'text' ? `<div><label>${t('ed.align')}</label><select data-e="align">
+        ${['left','center','right'].map(a => `<option value="${a}" ${a === el.align ? 'selected' : ''}>${t('align.' + a)}</option>`).join('')}</select></div>` : ''}
+      <label class="inline auto" style="margin-bottom:8px"><input type="checkbox" data-e="bold" ${el.bold ? 'checked' : ''}> ${t('ed.bold')}</label>
     </div>
     <div class="row">
-      <div class="auto"><label>Color</label><input type="color" data-e="color" value="${el.color}"></div>`;
+      <div class="auto"><label>${t('ed.color')}</label><input type="color" data-e="color" value="${el.color}"></div>`;
   if (el.type === 'text') h += `
-      <div class="auto"><label>Borde</label><input type="color" data-e="strokeColor" value="${el.strokeColor}"></div>
-      <div><label>Grosor borde</label><input type="number" data-e="stroke" min="0" max="20" value="${el.stroke}"></div>
+      <div class="auto"><label>${t('ed.border')}</label><input type="color" data-e="strokeColor" value="${el.strokeColor}"></div>
+      <div><label>${t('ed.borderW')}</label><input type="number" data-e="stroke" min="0" max="20" value="${el.stroke}"></div>
     </div>`;
   else h += `
-      <div class="auto"><label>Títulos</label><input type="color" data-e="headColor" value="${el.headColor}"></div>
-      <div class="auto"><label>Fondo</label><input type="color" data-e="bg" value="${el.bg}"></div>
-      <div><label>Opacidad fondo</label><input type="number" data-e="bgAlpha" min="0" max="1" step="0.05" value="${el.bgAlpha}"></div>
+      <div class="auto"><label>${t('ed.titles')}</label><input type="color" data-e="headColor" value="${el.headColor}"></div>
+      <div class="auto"><label>${t('ed.bg')}</label><input type="color" data-e="bg" value="${el.bg}"></div>
+      <div><label>${t('ed.bgOpacity')}</label><input type="number" data-e="bgAlpha" min="0" max="1" step="0.05" value="${el.bgAlpha}"></div>
     </div>
-    <label>Columnas</label>
-    <div class="chips">${Object.entries(COLS).map(([k, t]) =>
-      `<label class="inline" style="margin:0 8px 0 0"><input type="checkbox" data-col="${k}" ${el.cols.includes(k) ? 'checked' : ''}>${t}</label>`).join('')}</div>`;
-  if (el.id.startsWith('custom')) h += `<button id="delEl" style="margin-top:8px">Eliminar elemento</button>`;
+    <label>${t('ed.cols')}</label>
+    <div class="chips">${Object.keys(COLS).map(k =>
+      `<label class="inline" style="margin:0 8px 0 0"><input type="checkbox" data-col="${k}" ${el.cols.includes(k) ? 'checked' : ''}>${colName(k)}</label>`).join('')}</div>`;
+  if (el.id.startsWith('custom')) h += `<button id="delEl" style="margin-top:8px">${t('ed.deleteEl')}</button>`;
   $('#elEditor').innerHTML = h;
 }
 function syncXY() {
@@ -869,18 +1164,19 @@ $('#elEditor').addEventListener('click', e => {
 });
 dropZoneMulti($('#iconDrop'), $('#iconFile'), addIconFile);
 $('#addText').onclick = () => {
-  state.elements.push({ id:'custom' + Date.now(), label:'Texto', type:'text', text:'Nuevo texto', x:W/2, y:H/2, size:40, font:'Oswald', bold:false, color:'#ffffff', stroke:3, strokeColor:'#000000', align:'center', visible:true });
+  state.elements.push({ id:'custom' + Date.now(), label:t('ed.newLabel'), type:'text', text:t('ed.newText'), x:W/2, y:H/2, size:40, font:'Oswald', bold:false, color:'#ffffff', stroke:3, strokeColor:'#000000', align:'center', visible:true });
   sel = state.elements.length - 1; renderElList(); renderEditor(); draw(); save();
 };
 $('#resetLayout').onclick = () => {
-  if (!confirm('¿Restablecer los textos y la tabla al diseño original? (los logos e iconos se conservan)')) return;
+  if (!confirm(t('confirm.reset'))) return;
   state.elements = [...defaultElements(), ...state.elements.filter(el => el.type === 'image')]; sel = 0; renderElList(); renderEditor(); draw(); save();
 };
 
 // Variables: insertar en el textarea/campo enfocado por última vez
 let lastField = null;
 document.addEventListener('focusin', e => { if (e.target.matches('textarea, input[type=text]')) lastField = e.target; });
-$('#chips').innerHTML = VARS.map(v => `<span class="chip" data-v="{${v}}">{${v}}</span>`).join('');
+const renderChips = () => { $('#chips').innerHTML = varList().map(v => `<span class="chip" data-v="{${v}}">{${v}}</span>`).join(''); };
+renderChips();
 $('#chips').addEventListener('mousedown', e => e.preventDefault());
 $('#chips').addEventListener('click', e => {
   const c = e.target.closest('.chip'); if (!c || !lastField) return;
@@ -914,10 +1210,10 @@ function visibleQsos() {
 function renderTable() {
   const list = visibleQsos();
   const n = state.qsos.filter(q => q._sel).length;
-  $('#qsoCount').textContent = state.qsos.length ? `${state.qsos.length} contactos · ${n} seleccionados${state.fileName ? ' · ' + state.fileName : ''}` : '';
-  $('#adifInfo').textContent = state.fileName ? `${state.fileName}: ${state.qsos.length} contactos` : '';
+  $('#qsoCount').textContent = state.qsos.length ? t('qso.count', { a:state.qsos.length, b:n }) + (state.fileName ? ' · ' + state.fileName : '') : '';
+  $('#adifInfo').textContent = state.fileName ? t('adif.info', { f:state.fileName, n:state.qsos.length }) : '';
   $('#selAll').checked = list.length > 0 && list.every(q => q._sel);
-  if (!state.qsos.length) { $('#qsoBody').innerHTML = '<tr><td colspan="12" class="muted">Carga un archivo ADIF para ver los contactos.</td></tr>'; return; }
+  if (!state.qsos.length) { $('#qsoBody').innerHTML = `<tr><td colspan="12" class="muted">${esc(t('qso.empty'))}</td></tr>`; return; }
   $('#qsoBody').innerHTML = list.map(q => {
     const c = state.qrz.cache[q.call];
     const st = q._status || '';
@@ -927,9 +1223,9 @@ function renderTable() {
       <td><b>${esc(q.call)}</b></td><td>${esc(fmtDate(q.qso_date, state.station.dateFmt))}</td><td>${esc(fmtTime(q.time_on))}</td>
       <td>${esc(fmtFreq(q.freq))}</td><td>${esc(bandOf(q))}</td><td>${esc(modeOf(q))}</td><td>${esc(q.rst_sent || '')}/${esc(q.rst_rcvd || '')}</td>
       <td>${hasQrzName(q) ? esc(qrzName(q, true)) : adifName(q) ? esc(qrzName(q, true)) + ' <span class="muted small">(ADIF)</span>' : '<span class="muted">—</span>'}</td>
-      <td>${emailOf(q) ? esc(emailOf(q)) + (c?.email ? '' : ' <span class="muted small">(ADIF)</span>') : c ? '<span class="muted">sin correo</span>' : '<span class="muted">—</span>'}</td>
-      <td class="${cls}">${esc(st)}</td>
-      <td><button class="icon" data-dl title="Descargar QSL">⬇</button></td></tr>`;
+      <td>${emailOf(q) ? esc(emailOf(q)) + (c?.email ? '' : ' <span class="muted small">(ADIF)</span>') : c ? `<span class="muted">${esc(t('qso.noMail'))}</span>` : '<span class="muted">—</span>'}</td>
+      <td class="${cls}">${esc(statusText(st))}</td>
+      <td><button class="icon" data-dl title="${esc(t('qso.dl'))}">⬇</button></td></tr>`;
   }).join('');
 }
 $('#qsoBody').addEventListener('click', async e => {
@@ -946,26 +1242,26 @@ $('#dlOne').onclick = async () => { const q = previewQso(); download(await qslBl
 // El portapapeles solo admite PNG y solo funciona en contexto seguro (https o localhost)
 $('#copyOne').onclick = async () => {
   if (!window.isSecureContext || !navigator.clipboard || !window.ClipboardItem)
-    return alert('Tu navegador no permite copiar imágenes desde esta dirección.\nAbre la app en http://localhost:8000 (o por https), o usa "Descargar esta QSL".');
+    return alert(t('copy.unsupported'));
   const btn = $('#copyOne'), label = btn.textContent;
   try {
     // Se pasa la promesa directamente a ClipboardItem para que Safari conserve el permiso del clic
     const png = ensureImages().then(() => new Promise(r => qslCanvas(previewQso()).toBlob(r, 'image/png')));
     await navigator.clipboard.write([new ClipboardItem({ 'image/png': png })]);
-    btn.textContent = '✓ Copiada'; log(`QSL de ${previewQso().call} copiada al portapapeles`, 'ok');
+    btn.textContent = t('copy.ok'); log(t('copy.log', { c:previewQso().call }), 'ok');
   } catch (e) {
-    btn.textContent = '✗ No se pudo copiar'; log('Portapapeles: ' + e.message, 'err');
+    btn.textContent = t('copy.fail'); log(t('copy.logErr') + e.message, 'err');
   }
   setTimeout(() => btn.textContent = label, 1800);
 };
 $('#dlZip').onclick = async () => {
   const list = state.qsos.filter(q => q._sel);
-  if (!list.length) return alert('No hay contactos seleccionados.');
-  if (!window.JSZip) return alert('No se pudo cargar JSZip (revisa la conexión a internet).');
+  if (!list.length) return alert(t('noSel'));
+  if (!window.JSZip) return alert(t('zip.noLib'));
   const zip = new JSZip();
   for (const q of list) { zip.file(qslName(q), await qslBlob(q)); await sleep(0); }
   download(await zip.generateAsync({ type:'blob' }), `QSL_${state.station.call || state.call}.zip`);
-  log(`ZIP generado con ${list.length} QSL`, 'ok');
+  log(t('zip.done', { n:list.length }), 'ok');
 };
 
 /* ================= Log ================= */
@@ -982,8 +1278,8 @@ function progress(id, frac) {
 
 async function api(path, body) {
   const r = await fetch(path, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify(body) });
-  let j; try { j = await r.json(); } catch { throw new Error(`Servidor respondió ${r.status}`); }
-  if (!r.ok) throw new Error(j.error || `Error ${r.status}`);
+  let j; try { j = await r.json(); } catch { throw new Error(t('api.status', { s:r.status })); }
+  if (!r.ok) throw new Error(r.status === 401 ? t('err.gmail') : (j.error || t('api.error', { s:r.status })));
   return j;
 }
 
@@ -1015,13 +1311,13 @@ async function qrzLookup(call) {
 
 $('#qrzBtn').onclick = async () => {
   const selected = state.qsos.filter(q => q._sel);
-  if (!selected.length) return alert('No hay contactos seleccionados.');
+  if (!selected.length) return alert(t('noSel'));
   // Los indicativos que ya traen correo en el ADIF no necesitan consulta
   const withMail = new Set(selected.filter(adifEmail).map(q => q.call));
   const calls = [...new Set(selected.map(q => q.call))].filter(c => !withMail.has(c));
-  if (withMail.size) log(`QRZ: ${withMail.size} indicativo(s) omitidos porque ya tienen correo en el ADIF`, 'info');
-  if (!calls.length) return alert('Todos los contactos seleccionados ya tienen correo en el ADIF; no hace falta consultar QRZ.');
-  if (!state.qrz.session.trim()) return alert('Ingresa el Session ID de QRZ.');
+  if (withMail.size) log(t('qrz.skipped', { n:withMail.size }), 'info');
+  if (!calls.length) return alert(t('qrz.allHave'));
+  if (!state.qrz.session.trim()) return alert(t('qrz.needSession'));
   $('#qrzBtn').disabled = true;
   let ok = 0;
   try {
@@ -1032,41 +1328,41 @@ $('#qrzBtn').onclick = async () => {
         const r = await qrzLookup(call);
         if (r.data) {
           state.qrz.cache[call] = r.data; ok++;
-          log(`QRZ ${call}: ${titleCase(r.data.fname + ' ' + r.data.name)}${r.data.email ? ' <' + r.data.email + '>' : ' (sin correo)'}`, r.data.email ? 'ok' : 'info');
+          log(`QRZ ${call}: ${titleCase(r.data.fname + ' ' + r.data.name)}${r.data.email ? ' <' + r.data.email + '>' : t('qrz.noMail')}`, r.data.email ? 'ok' : 'info');
         } else {
-          log(`QRZ ${call}: ${r.error || 'sin datos'}`, 'err');
-          if (/session|invalid|timeout|password|not authorized/i.test(r.error)) { alert('QRZ: ' + r.error + '\nRevisa el Session ID.'); break; }
+          log(`QRZ ${call}: ${r.error || t('qrz.noData')}`, 'err');
+          if (/session|invalid|timeout|password|not authorized/i.test(r.error)) { alert('QRZ: ' + r.error + '\n' + t('qrz.checkSession')); break; }
         }
-      } catch (e) { log(`QRZ ${call}: ${e.message}`, 'err'); if (/fetch/i.test(e.message)) { alert('No se pudo contactar al servidor local. ¿Está corriendo server.py?'); break; } }
+      } catch (e) { log(`QRZ ${call}: ${e.message}`, 'err'); if (/fetch/i.test(e.message)) { alert(t('srv.unreachable')); break; } }
       renderTable(); save();
       await sleep(250);
     }
   } finally {
     progress('#qrzProg', null); $('#qrzBtn').disabled = false; draw();
-    log(`Consulta QRZ terminada: ${ok}/${calls.length} encontrados`, 'ok');
+    log(t('qrz.done', { ok, n:calls.length }), 'ok');
   }
 };
 $('#qrzClear').onclick = () => { state.qrz.cache = {}; renderTable(); draw(); save(); };
 
 /* ================= Correo ================= */
 $('#mailTest').onclick = async () => {
-  if (!state.mail.user || !state.mail.pass) return alert('Escribe la cuenta Gmail y la contraseña de aplicación.');
+  if (!state.mail.user || !state.mail.pass) return alert(t('mail.need'));
   $('#mailTest').disabled = true;
-  try { await api('/api/verify', { user:state.mail.user, pass:state.mail.pass }); log('Conexión con Gmail correcta', 'ok'); alert('✓ Conexión con Gmail correcta'); }
+  try { await api('/api/verify', { user:state.mail.user, pass:state.mail.pass }); log(t('mail.ok'), 'ok'); alert('✓ ' + t('mail.ok')); }
   catch (e) { log('Gmail: ' + e.message, 'err'); alert('Gmail: ' + e.message); }
   finally { $('#mailTest').disabled = false; }
 };
 
 $('#sendBtn').onclick = async () => {
   const m = state.mail;
-  if (!m.user || !m.pass) return alert('Escribe la cuenta Gmail y la contraseña de aplicación.');
+  if (!m.user || !m.pass) return alert(t('mail.need'));
   let list = state.qsos.filter(q => q._sel && emailOf(q));
   if (m.skipSent) list = list.filter(q => !String(q._status).startsWith('✓'));
   const noMail = state.qsos.filter(q => q._sel && !emailOf(q)).length;
-  if (!list.length) return alert('Ningún contacto seleccionado tiene correo (ni en el ADIF ni en QRZ). Consulta primero QRZ.' + (noMail ? `\n(${noMail} seleccionados sin correo)` : ''));
+  if (!list.length) return alert(t('send.none') + (noMail ? '\n' + t('send.noMailN', { n:noMail }) : ''));
   // Agrupar por indicativo o un correo por QSO
   const groups = m.group ? Object.values(list.reduce((g, q) => ((g[q.call] ||= []).push(q), g), {})) : list.map(q => [q]);
-  if (!confirm(`Se enviarán ${groups.length} correo(s) con ${list.length} QSL desde ${m.user}.${noMail ? `\n${noMail} seleccionados no tienen correo y se omitirán.` : ''}\n\n¿Continuar?`)) return;
+  if (!confirm(t('send.confirm', { g:groups.length, n:list.length, u:m.user }) + (noMail ? '\n' + t('send.skipN', { n:noMail }) : '') + '\n\n' + t('continue'))) return;
 
   $('#sendBtn').disabled = true;
   await ensureImages();
@@ -1083,18 +1379,18 @@ $('#sendBtn').onclick = async () => {
           attachments:g.map(x => ({ filename:qslName(x), mime:mime(), data:qslBase64(x) })),
         });
         g.forEach(x => x._status = '✓ Enviado'); ok++;
-        log(`Enviado a ${q.call} <${to}> (${g.length} QSL)`, 'ok');
+        log(t('send.sentTo', { c:q.call, to, n:g.length }), 'ok');
       } catch (e) {
         g.forEach(x => x._status = '✗ ' + e.message);
-        log(`Error con ${q.call}: ${e.message}`, 'err');
-        if (/contraseña|rechaz|fetch/i.test(e.message)) { alert(e.message); break; }
+        log(t('send.errWith', { c:q.call, m:e.message }), 'err');
+        if (/contraseña|rechaz|password|reject|fetch/i.test(e.message)) { alert(e.message); break; }
       }
       renderTable(); save();
       await sleep(1500);   // pausa para no disparar los límites de Gmail
     }
   } finally {
     progress('#sendProg', null); $('#sendBtn').disabled = false;
-    log(`Envío terminado: ${ok}/${groups.length} correos`, 'ok');
+    log(t('send.done', { ok, n:groups.length }), 'ok');
   }
 };
 
@@ -1125,7 +1421,7 @@ dropZone($('#bgDrop'), $('#bgFile'), file => {
     URL.revokeObjectURL(img.src);
     loadBg(state.bg); save();
   };
-  img.onerror = () => alert('No se pudo leer la imagen.');
+  img.onerror = () => alert(t('img.readBg'));
   img.src = URL.createObjectURL(file);
 });
 $('#bgClear').onclick = () => { state.bg = null; loadBg(null); save(); };
@@ -1146,21 +1442,21 @@ $('#cfgSave').onclick = () => {
   };
   const day = cfg.saved.slice(0, 10);
   download(new Blob([JSON.stringify(cfg, null, 1)], { type:'application/json' }), `QSL_config_${state.call.replace(/\//g, '-')}_${day}.json`);
-  log(`Configuración guardada${withQsos ? ' con contactos' : ''}${secrets ? ' (incluye credenciales)' : ''}`, 'ok');
+  log(t('cfg.saved') + (withQsos ? t('cfg.withQsos') : '') + (secrets ? t('cfg.withSecrets') : ''), 'ok');
 };
 $('#cfgLoad').onclick = () => $('#cfgFile').click();
 $('#cfgFile').onchange = async e => {
   const file = e.target.files[0]; e.target.value = '';
   if (!file) return;
   let cfg;
-  try { cfg = JSON.parse(await file.text()); } catch { return alert('El archivo no es una configuración válida (JSON dañado).'); }
-  if (cfg?.app !== CFG_APP || !Array.isArray(cfg.elements)) return alert('El archivo no es una configuración del Generador de QSL.');
-  if (cfg.version > CFG_VERSION) return alert('Esta configuración es de una versión más nueva del generador. Actualiza la aplicación.');
-  const parts = ['• Datos de la estación', '• Diseño de la QSL (fondo, logos, iconos y textos)', '• Configuración del correo'];
-  if (cfg.qsos) parts.push(`• ${cfg.qsos.length} contactos y datos de QRZ (reemplazan los actuales)`);
-  if (cfg.qrz?.session || cfg.mail?.pass) parts.push('• Session ID de QRZ y/o contraseña de Gmail');
-  const from = cfg.call && cfg.call !== state.call ? `\n\nEl archivo es del indicativo ${cfg.call}; se cargará en ${state.call}.` : '';
-  if (!confirm(`Se reemplazará la configuración actual de ${state.call} con:\n\n${parts.join('\n')}${from}\n\n¿Continuar?`)) return;
+  try { cfg = JSON.parse(await file.text()); } catch { return alert(t('cfg.badJson')); }
+  if (cfg?.app !== CFG_APP || !Array.isArray(cfg.elements)) return alert(t('cfg.notOurs'));
+  if (cfg.version > CFG_VERSION) return alert(t('cfg.newer'));
+  const parts = [t('cfg.p1'), t('cfg.p2'), t('cfg.p3')];
+  if (cfg.qsos) parts.push(t('cfg.p4', { n:cfg.qsos.length }));
+  if (cfg.qrz?.session || cfg.mail?.pass) parts.push(t('cfg.p5'));
+  const from = cfg.call && cfg.call !== state.call ? t('cfg.from', { a:cfg.call, b:state.call }) : '';
+  if (!confirm(t('cfg.confirm', { c:state.call }) + '\n\n' + parts.join('\n') + from + '\n\n' + t('continue'))) return;
 
   const d = defaultState(state.call);
   state.station = { ...d.station, ...cfg.station };
@@ -1174,7 +1470,7 @@ $('#cfgFile').onchange = async e => {
   loadBg(state.bg); bindForm(); renderElList(); renderEditor(); renderTable(); draw(); persist();
   // Las fuentes del diseño pueden no estar cargadas aún en este navegador
   Promise.all(state.elements.filter(el => el.font).map(el => document.fonts.load(`40px "${el.font}"`).catch(() => {}))).then(draw);
-  log(`Configuración cargada desde ${file.name}`, 'ok');
+  log(t('cfg.loaded', { f:file.name }), 'ok');
 };
 
 /* ================= Inicio ================= */
@@ -1191,12 +1487,7 @@ $('#logoutBtn').onclick = () => {
 };
 // Borrar todo: elimina los datos de todos los indicativos guardados en este navegador
 $('#resetAllBtn').onclick = () => {
-  if (!confirm('⚠ ATENCIÓN: se borrarán TODOS los datos guardados en este navegador:\n\n' +
-    '• Contactos cargados del ADIF y estado de los envíos\n' +
-    '• Datos de la estación, diseño de la QSL, fondo e iconos personales\n' +
-    '• Session ID de QRZ y datos consultados\n' +
-    '• Cuenta de Gmail, contraseña de aplicación y mensaje del correo\n\n' +
-    'Esta acción no se puede deshacer. ¿Deseas continuar?')) return;
+  if (!confirm(t('confirm.wipe'))) return;
   clearTimeout(saveTimer);
   for (const s of [localStorage, sessionStorage]) {
     try { Object.keys(s).filter(k => k.startsWith('qslapp:')).forEach(k => s.removeItem(k)); } catch {}
@@ -1205,6 +1496,7 @@ $('#resetAllBtn').onclick = () => {
   location.reload();   // arranca de cero: formulario, tabla y vista previa vacíos
 };
 window.addEventListener('pagehide', persist);   // no perder lo escrito en los últimos 300 ms
+applyLang();
 if (location.protocol === 'file:') $('#fileWarn').style.display = 'block';
 loadLogos();
 document.fonts.ready.then(() => Promise.all(FONTS.slice(0, 5).map(f => document.fonts.load(`40px "${f}"`).catch(() => {})))).then(draw);
