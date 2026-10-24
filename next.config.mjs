@@ -2,7 +2,12 @@
 const nextConfig = {
   poweredByHeader: false,
   async rewrites() {
-    return [{ source: "/index.html", destination: "/" }];
+    return [
+      { source: "/", destination: "/index.html" },
+    ];
+  },
+  outputFileTracingIncludes: {
+    "/api/logos": ["./public/logos/**/*"],
   },
 };
 
