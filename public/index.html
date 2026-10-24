@@ -1492,6 +1492,10 @@ $('#resetAllBtn').onclick = () => {
   for (const s of [localStorage, sessionStorage]) {
     try { Object.keys(s).filter(k => k.startsWith('qslapp:')).forEach(k => s.removeItem(k)); } catch {}
   }
+  try {
+    localStorage.removeItem('qsl-theme');
+    localStorage.removeItem('qsl-lang');
+  } catch {}
   state = null;
   location.reload();   // arranca de cero: formulario, tabla y vista previa vacíos
 };
