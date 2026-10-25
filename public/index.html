@@ -129,7 +129,7 @@
 <div id="login">
   <div class="card">
     <img src="post-card.png" width="250" height="163" >
-    <h1 data-i18n="login.title">📻 Generador de QSL 🖄</h1>
+    <h1 data-i18n="login.title">📻 Generador de QSL Point 📨</h1>
     <p class="muted small" data-i18n="login.intro">Ingresa tu indicativo para comenzar. Tus datos se guardan solo en este navegador, nunca en el servidor. Tú decides si también se recuerdan el Session ID de QRZ y la contraseña de Gmail.</p>
     <p class="muted small" data-i18n="credit">Creado por HK4Q</p>
     <input id="loginCall" type="text" placeholder="HK4AAA" autocomplete="off" maxlength="15">
@@ -263,7 +263,7 @@
         <label data-i18n="mail.fromName">Nombre del remitente</label><input type="text" data-k="mail.fromName">
         <label data-i18n="mail.subjectL">Asunto</label><input type="text" data-k="mail.subject">
         <label data-i18n="mail.bodyL">Mensaje</label><textarea data-k="mail.body" rows="9"></textarea>
-        <p class="small muted" style="margin:4px 0" data-i18n="mail.vars">Usa {NOMBRE} para el nombre que devuelve QRZ y {QSOS} para la lista de contactos.</p>
+        <p class="small muted" style="margin:4px 0" data-i18n="mail.vars">Usa {NOMBRE} para el nombre que devuelve QRZ y {QSOS} para la lista de contactos, ⚠ Valida las variables si cambiaste de idioma ⚠`</p>
         <div class="row">
           <div><label data-i18n="mail.format">Formato de imagen</label>
             <select data-k="mail.format"><option value="jpg" data-i18n="mail.jpg">JPG (más liviano)</option><option value="png">PNG</option></select></div>
@@ -370,7 +370,7 @@ es: {
   'credit': `Creado por HK4Q`,
   'disclaimer_title':'EXCLUSIÓN DE GARANTÍAS Y LIMITACIÓN DE RESPONSABILIDAD',
   'disclaimer':'EL SOFTWARE SE PROPORCIONA "TAL CUAL" Y "SEGÚN DISPONIBILIDAD", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O IMPLÍCITA, INCLUIDAS, ENTRE OTRAS, LAS GARANTÍAS DE COMERCIABILIDAD, IDONEIDAD PARA UN FIN PARTICULAR Y NO INFRACCIÓN.\nEN NINGÚN CASO EL AUTOR, LOS DESARROLLADORES O LOS TITULARES DEL COPYRIGHT SERÁN RESPONSABLES DE NINGÚN DAÑO DIRECTO, INDIRECTO, INCIDENTAL, ESPECIAL, PUNITIVO O CONSECUENTE (INCLUYENDO, PÉRDIDA DE DATOS, INTERRUPCIÓN DE LA ACTIVIDAD COMERCIAL O PÉRDIDA DE BENEFICIOS) QUE DERIVE DEL USO O DE LA IMPOSIBILIDAD DE USO DEL SOFTWARE, AUNQUE SE HAYA ADVERTIDO DE LA POSIBILIDAD DE DICHOS DAÑOS.\nEL USUARIO ASUME TODO EL RIESGO EN CUANTO A LA CALIDAD, EL RENDIMIENTO Y LA SEGURIDAD DEL PROGRAMA.',
-  'login.title': `📻 Generador de QSL 🖄`,
+  'login.title': `📻 Generador de QSL 📨`,
   'login.intro': `Ingresa tu indicativo para comenzar. Tus datos se guardan solo en este navegador, nunca en el servidor. Tú decides si también se recuerdan el Session ID de QRZ y la contraseña de Gmail.`,
   'login.enter': `Entrar`,
   'manual': `📖 Manual de usuario`,
@@ -399,7 +399,7 @@ es: {
   'mail.user': `Cuenta Gmail`, 'mail.pass': `Contraseña de aplicación`, 'mail.test': `Probar`,
   'mail.rememberPass': `Recordar la contraseña en este navegador`,
   'mail.fromName': `Nombre del remitente`, 'mail.subjectL': `Asunto`, 'mail.bodyL': `Mensaje`,
-  'mail.vars': `Usa {NOMBRE} para el nombre que devuelve QRZ y {QSOS} para la lista de contactos.`,
+  'mail.vars': `Usa {NOMBRE} para el nombre que devuelve QRZ y {QSOS} para la lista de contactos, ⚠ Valida las variables si cambiaste de idioma ⚠`,
   'mail.format': `Formato de imagen`, 'mail.jpg': `JPG (más liviano)`,
   'mail.group': `Un solo correo por indicativo (todas sus QSL adjuntas)`,
   'mail.skipSent': `No reenviar a los ya enviados`, 'mail.send': `Enviar QSL por correo`,
@@ -487,7 +487,7 @@ en: {
   'credit': `Created by HK4Q`,
   'disclaimer_title':'DISCLAIMER OF WARRANTIES AND LIMITATION OF LIABILITY',
   'disclaimer':'THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE," WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.\nIN NO EVENT SHALL THE AUTHOR, DEVELOPERS, OR COPYRIGHT HOLDERS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, PUNITIVE, OR CONSEQUENTIAL DAMAGES (INCLUDING LOSS OF DATA, BUSINESS INTERRUPTION, OR LOSS OF PROFITS) ARISING FROM THE USE OR INABILITY TO USE THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.\nTHE USER ASSUMES ALL RISK REGARDING THE QUALITY, PERFORMANCE, AND SECURITY OF THE PROGRAM.',
-  'login.title': `📻 QSL Generator 🖄`,
+  'login.title': `📻 QSL Generator 📨`,
   'login.intro': `Enter your callsign to get started. Your data is stored only in this browser, never on the server. You decide whether the QRZ Session ID and the Gmail password are remembered too.`,
   'login.enter': `Enter`,
   'manual': `📖 User manual`,
@@ -516,7 +516,7 @@ en: {
   'mail.user': `Gmail account`, 'mail.pass': `App password`, 'mail.test': `Test`,
   'mail.rememberPass': `Remember the password in this browser`,
   'mail.fromName': `Sender name`, 'mail.subjectL': `Subject`, 'mail.bodyL': `Message`,
-  'mail.vars': `Use {NAME} for the name returned by QRZ and {QSOS} for the list of contacts.`,
+  'mail.vars': `Use {NAME} for the name returned by QRZ and {QSOS} for the list of contacts. ⚠ Check all variables if change language ⚠`,
   'mail.format': `Image format`, 'mail.jpg': `JPG (lighter)`,
   'mail.group': `One email per callsign (all its QSLs attached)`,
   'mail.skipSent': `Do not resend to those already sent`, 'mail.send': `Send QSL by email`,
