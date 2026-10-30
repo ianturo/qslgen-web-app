@@ -1,6 +1,15 @@
 <!doctype html>
 <html lang="es">
 <head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-89C1656QLH"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-89C1656QLH');
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Generador de QSL</title>
@@ -9,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Tourney&family=Mitr&family=Sour+Gummy:wght@400;700&family=Audiowide&family=Stylish&family=Readex+Pro&family=Rampart+One&family=Agbalumo&family=Oswald:wght@400;700&family=Shalimar&family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <style>
-  :root{
+ :root{
     color-scheme:dark;
     --bg:#0f141b; --panel:#171e28; --panel2:#1e2733; --line:#2b3644; --text:#e6edf3; --muted:#8b98a8;
     --accent:#b7d1d7; --accent2:#c7e1d7; --onAccent:#111; --ok:#22c55e; --err:#ef4444; --info:#38bdf8;
@@ -241,7 +250,7 @@
         <label>Session ID (s=…)</label>
         <input type="text" data-k="qrz.session" placeholder="p.ej. 2331uf894c4bd29f3923f3bacf02c532d7bd9">
         <label class="inline"><input type="checkbox" data-k="qrz.remember"> <span data-i18n="qrz.remember">Recordar el Session ID en este navegador</span></label>
-        <p class="small muted" data-i18n-html="qrz.help">Se consulta <code>xmldata.qrz.com/xml/?s=SESSION;callsign=CALL</code>. El correo solo lo entrega QRZ si tu suscripción XML lo incluye.</p>
+        <p class="small muted" data-i18n-html="qrz.help">Entra a <a href="https://xml.qrz.com/xcheck" target="_blank">https://xml.qrz.com/xcheck</a></a> para obtener tu ID de sesion (se requiere suscripcion XML).</p>
         <div class="row"><button id="qrzBtn" class="primary" data-i18n="qrz.btn">Consultar seleccionados</button><button id="qrzClear" class="auto" data-i18n="qrz.clear">Limpiar caché</button></div>
         <div class="progress" id="qrzProg"><div></div></div>
       </div>
@@ -393,7 +402,7 @@ es: {
   'addText': `+ Añadir texto`, 'resetLayout': `Restablecer diseño`,
   'vars.label': `Variables disponibles (clic para insertar)`,
   'qrz.remember': `Recordar el Session ID en este navegador`,
-  'qrz.help': `Se consulta <code>xmldata.qrz.com/xml/?s=SESSION;callsign=CALL</code>. El correo solo lo entrega QRZ si tu suscripción XML lo incluye.`,
+  'qrz.help': `Entra a <a href="https://xml.qrz.com/xcheck" target="_blank">https://xml.qrz.com/xcheck</a></a> para obtener tu ID de sesion (se requiere suscripcion XML).`,
   'qrz.btn': `Consultar seleccionados`, 'qrz.clear': `Limpiar caché`,
   's5': `5. Envío por Gmail`,
   'mail.user': `Cuenta Gmail`, 'mail.pass': `Contraseña de aplicación`, 'mail.test': `Probar`,
@@ -510,7 +519,7 @@ en: {
   'addText': `+ Add text`, 'resetLayout': `Reset design`,
   'vars.label': `Available variables (click to insert)`,
   'qrz.remember': `Remember the Session ID in this browser`,
-  'qrz.help': `Queries <code>xmldata.qrz.com/xml/?s=SESSION;callsign=CALL</code>. QRZ only provides the email if your XML subscription includes it.`,
+  'qrz.help': `Go to <a href="https://xml.qrz.com/xcheck" target="_blank">https://xml.qrz.com/xcheck</a> to obtain your session ID (an XML subscription is required).`,
   'qrz.btn': `Look up selected`, 'qrz.clear': `Clear cache`,
   's5': `5. Send via Gmail`,
   'mail.user': `Gmail account`, 'mail.pass': `App password`, 'mail.test': `Test`,
