@@ -7,6 +7,11 @@ The interface and the manual are available in **English and Spanish**, with ligh
 
 Test in <https://qslgen.hk4q.net/>
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://qslgen.hk4q.net/screen-dark.png">
+  <img src="https://qslgen.hk4q.net/screen-light.png" alt="Turn your ADIF log into customized electronic QSL cards, enrich contacts with QRZ.com and send them by Gmail." width="900">
+</picture>
+
 ## Features
 
 - **Callsign-based access** — no account or password; the callsign only separates each operator's data in the same browser.
