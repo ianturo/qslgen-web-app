@@ -1,8 +1,11 @@
-# QSL Generator
+# QSL Web Generator
+As an amateur radio operator, I frequently activate sites such as islands or POTA (Parks on the Air) locations, and I like to send QSL cards featuring these beautiful spots. However, the available free options made it difficult to send them in bulk, so—with the help of some AI—I set out to develop exactly what I needed.
 
-Web application that turns your ADIF log into customized electronic QSL cards, looks up each correspondent's name and email on QRZ.com, and sends the cards by Gmail.
+This Web Aapplication that turns your ADIF log into customized electronic QSL cards, looks up each correspondent's name and email on QRZ.com, and sends the cards by Gmail.
 
 The interface and the manual are available in **English and Spanish**, with light and dark themes. All user data stays in the browser; the server keeps no database, logs or stored credentials.
+
+Test in <https://qslgen.hk4q.net/>
 
 ## Features
 
