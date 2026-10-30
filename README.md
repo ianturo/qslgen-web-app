@@ -122,3 +122,5 @@ next.config.mjs       Rewrites "/" to index.html, no powered-by header
 ## Documentation
 
 The full user guide, covering every screen and the troubleshooting table, is in [public/manual.html](public/manual.html) and is also reachable from the generator through the **📖 Manual de usuario** link.
+
+logos belong to their respective owners.
