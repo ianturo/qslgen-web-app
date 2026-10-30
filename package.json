@@ -1,5 +1,5 @@
 {
-  "name": "qsl-app",
+  "name": "qslgen-web-app",
   "version": "1.0.0",
   "private": true,
   "scripts": {
