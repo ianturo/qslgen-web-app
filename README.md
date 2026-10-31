@@ -124,7 +124,9 @@ next.config.mjs       Rewrites "/" to index.html, no powered-by header
 - **QRZ session keys expire**; generate a new one if you see *Session Timeout* or *Invalid session key*. Keys travel only from the browser to the QRZ endpoint and are never stored on the server.
 - **Clipboard copy** requires `localhost` or HTTPS; otherwise use *Download this QSL*.
 - **Backgrounds and icons** live in browser storage. Very large background images may not fit and will need re-uploading after reload.
-- **Changing browsers or computers** means the data is not there; use *Save settings* / *Load settings* to transfer it. The file is unencrypted, so only include credentials if it is stored safely.
+- **Changing browsers or computers** means the data is not there; use *Save settings* / *Load settings* to transfer it. 
+
+> [!WARNING] The file downloaded is unencrypted, so only include credentials if it is stored safely.
 
 ## Documentation
 
