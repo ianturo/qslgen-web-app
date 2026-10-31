@@ -126,7 +126,8 @@ next.config.mjs       Rewrites "/" to index.html, no powered-by header
 - **Backgrounds and icons** live in browser storage. Very large background images may not fit and will need re-uploading after reload.
 - **Changing browsers or computers** means the data is not there; use *Save settings* / *Load settings* to transfer it. 
 
-> [!WARNING] The file downloaded is unencrypted, so only include credentials if it is stored safely.
+> [!WARNING] 
+The file downloaded is unencrypted, so only include credentials if it is stored safely.
 
 ## Documentation
 
