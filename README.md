@@ -1,11 +1,13 @@
 # QSL Web Generator
-As an amateur radio operator, I frequently activate sites such as islands or POTA (Parks on the Air) locations, and I like to send QSL cards featuring these beautiful spots. However, the available free options made it difficult to send them in bulk, so—with the help of some AI—I set out to develop exactly what I needed.
+As an amateur radio operator, I frequently activate sites such as islands or POTA (Parks on the Air) locations, and I like to send QSL cards featuring these beautiful spots. However, the available free options made it difficult to send them in bulk, so —with some help of AI— Here is the result: the tool I’ve long wished existed.
 
-This Web Aapplication that turns your ADIF log into customized electronic QSL cards, looks up each correspondent's name and email on QRZ.com, and sends the cards by Gmail.
+This web application converts your ADIF log into personalized electronic QSL cards, looks up the name and email address of each contact on QRZ.com, and sends the cards via Gmail.
 
-The interface and the manual are available in **English and Spanish**, with light and dark themes. All user data stays in the browser; the server keeps no database, logs or stored credentials.
+The interface and manual are available in **English and Spanish**, with light and dark themes. All user data remains in your browser; the server does not store databases, logs, or credentials.
 
-Test in <https://qslgen.hk4q.net/>
+It is available for use here: <https://qslgen.hk4q.net/>  I am making the code available in case anyone wishes to modify it or add any functionality.
+
+Help with suggesting improvements or development is welcome.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://qslgen.hk4q.net/screen-dark.png">
@@ -14,10 +16,10 @@ Test in <https://qslgen.hk4q.net/>
 
 ## Features
 
-- **Callsign-based access** — no account or password; the callsign only separates each operator's data in the same browser.
+- **Callsign-based access** — no account or password; the **callsign** only separates each operator's data in the same browser.
 - **ADIF import** — load `.adi` / `.adif` files; names (`NAME` / `NAME_INTL`) and emails (`EMAIL`) from the log are reused, and `MY_*` fields prefill the station data.
 - **QSL designer** — 1240 × 797 px card with background image, predefined logos, personal icons, free texts and a configurable QSO table. Elements can be dragged, resized, hidden and restyled.
-- **Template variables** — `{CALL}`, `{NOMBRE}`, `{FECHA}`, `{BANDA}`, `{MODO}`, `{QSOS}` and many more, usable in card texts and in the email subject/message.
+- **Template variables** — `{MY_CALL}`, `{CALL}`, `{NAME}`, `{DATE}`, `{BAND}`, `{MODE}`, `{QSOS}` and many more, usable in card texts and in the email subject/message.
 - **QRZ.com lookup** — fills in names and public emails using a QRZ XML session key, with caching and portable-callsign fallback.
 - **Delivery by Gmail** — sends each card as a JPG/PNG attachment through Gmail SMTP with an app password, optionally grouping contacts by callsign and skipping already-sent ones.
 - **Downloads** — single-card download, copy to clipboard, or a ZIP with all selected cards.
@@ -33,7 +35,7 @@ Test in <https://qslgen.hk4q.net/>
 ## Requirements
 
 - Node.js **20.9 or newer**
-- A QRZ.com account with a subscription that includes **XML Logbook Data** (optional; needed only for QRZ lookups)
+- A QRZ.com account with a subscription that includes **XML Logbook Data** (optional; needed only for QRZ extra info lookups like Name and Email Address) 
 - A Gmail account with 2-Step Verification and an **app password** (needed to send email)
 
 ## Getting started
@@ -66,21 +68,21 @@ No environment variables are required. The Gmail app password and the QRZ sessio
 
 ## Variables
 
-Variables are written between braces and replaced per contact. Names are the same in both languages, so saved designs keep working.
+Variables are written between braces and replaced per contact. Names work in both languages, so saved designs keep working.
 
 | Variable | Content |
 | -------- | ------- |
-| `{MI_INDICATIVO}` `{MI_NOMBRE}` | Your callsign and name |
-| `{MI_QTH}` `{MI_PAIS}` `{MI_GRID}` | Your city, country and grid |
+| `{MY_CALL}` `{MI_NAME}` | Your callsign and name |
+| `{MY_QTH}` `{MI_COUNTRY}` `{MYGRID}` | Your city, country and grid |
 | `{CQ}` `{ITU}` | Your CQ and ITU zones |
-| `{RIG}` `{ANTENA}` `{POTENCIA}` | Your equipment, antenna and power |
+| `{RIG}` `{ANTENNA}` `{POWER}` | Your equipment, antenna and power |
 | `{EXTRA}` | Extra text from *My station* |
 | `{CALL}` | Correspondent's callsign |
-| `{NOMBRE}` `{NOMBRE_COMPLETO}` | Correspondent's first or full name (from QRZ or ADIF; falls back to the callsign) |
-| `{FECHA}` `{HORA}` | QSO date (chosen format) and UTC time |
-| `{FREQ}` `{BANDA}` `{MODO}` | Frequency in MHz, band and mode |
-| `{RST_ENV}` `{RST_REC}` | Reports sent and received |
-| `{QTH}` `{GRID}` `{PAIS}` | Correspondent's location |
+| `{NAME}` `{FULL_NAME}` | Correspondent's first or full name (from QRZ or ADIF; falls back to the callsign) |
+| `{DATE}` `{TIME}` | QSO date (chosen format) and UTC time |
+| `{FREQ}` `{BAND}` `{MODE}` | Frequency in MHz, band and mode |
+| `{RST_SENT}` `{RST_RECVD}` | Reports sent and received |
+| `{QTH}` `{GRID}` `{COUNTRY}` | Correspondent's location |
 | `{QSOS}` | List of the contacts included in the email, one per line |
 
 In card texts, segments separated by `·`, `|` or `,` whose variables are empty are dropped, along with lines left empty.
@@ -116,7 +118,7 @@ public/
 next.config.mjs       Rewrites "/" to index.html, no powered-by header
 ```
 
-## Practical notes
+## Limitations of certain external tools and configurations to keep in mind
 
 - **Gmail limits:** personal accounts can send roughly 500 messages a day; the app pauses 1.5 s between emails, so send large batches in groups.
 - **QRZ session keys expire**; generate a new one if you see *Session Timeout* or *Invalid session key*. Keys travel only from the browser to the QRZ endpoint and are never stored on the server.
@@ -126,6 +128,6 @@ next.config.mjs       Rewrites "/" to index.html, no powered-by header
 
 ## Documentation
 
-The full user guide, covering every screen and the troubleshooting table, is in [public/manual.html](public/manual.html) and is also reachable from the generator through the **📖 Manual de usuario** link.
+The complete user guide, which covers all options and includes a troubleshooting table, can be found at [public/manual.html](public/manual.html) and is also accessible from the generator via the **📖 User Manual** link located in the top-right corner of the application.
 
 logos belong to their respective owners.
