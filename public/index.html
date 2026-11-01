@@ -99,6 +99,9 @@
   #login{position:fixed;inset:0;background:var(--loginBg);display:flex;align-items:center;justify-content:center;z-index:10;padding:16px}
   #login .card{width:100%;max-width:380px;padding:28px;text-align:center}
   #login input{text-align:center;font:700 26px Oswald;text-transform:uppercase;letter-spacing:2px;margin:14px 0}
+  dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:18px;width:min(520px,92vw)}
+  dialog::backdrop{background:rgba(0,0,0,.6)}
+  dialog h2{margin-bottom:6px}
   .progress{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin-top:8px;display:none}
   .progress>div{height:100%;width:0;background:var(--accent);transition:width .2s}
   @media (max-width:980px){ main{grid-template-columns:1fr;padding:12px} header{padding:10px 16px;flex-wrap:wrap} }
@@ -316,7 +319,9 @@
         <h2 data-i18n="qso.title">Contactos</h2><span class="muted small" id="qsoCount"></span>
         <span style="flex:1"></span>
         <input type="text" id="filter" placeholder="Filtrar…" data-i18n-ph="filter.ph" style="width:160px">
-        <button id="dlZip" data-i18n="dlZip">Descargar seleccionadas (ZIP)</button>
+        <button id="addQso" data-i18n="qf.add">+ Añadir contacto</button>
+        <button id="editQso" data-i18n="qf.editSel">✎ Editar seleccionado</button>
+        <button id="dlZip" data-i18n="dlZip">Descargar QSLs seleccionadas (ZIP)</button>
       </div>
       <div class="tableWrap">
         <table>
@@ -329,16 +334,42 @@
       </div>
       <div id="log"></div>
     </div>
-    <div>
-        <p class="muted small" align="center" data-i18n="credit">Creado por HK4Q</p>
-    </div>
     <details>
         <summary data-i18n="disclaimer_title">EXCLUSIÓN DE GARANTÍAS Y LIMITACIÓN DE RESPONSABILIDAD</summary>
         <div class="muted small" data-i18n="disclaimer" align="center">EL SOFTWARE SE PROPORCIONA "TAL CUAL" Y "SEGÚN DISPONIBILIDAD", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O IMPLÍCITA, INCLUIDAS, ENTRE OTRAS, LAS GARANTÍAS DE COMERCIABILIDAD, IDONEIDAD PARA UN FIN PARTICULAR Y NO INFRACCIÓN.\nEN NINGÚN CASO EL AUTOR, LOS DESARROLLADORES O LOS TITULARES DEL COPYRIGHT SERÁN RESPONSABLES DE NINGÚN DAÑO DIRECTO, INDIRECTO, INCIDENTAL, ESPECIAL, PUNITIVO O CONSECUENTE (INCLUYENDO, PÉRDIDA DE DATOS, INTERRUPCIÓN DE LA ACTIVIDAD COMERCIAL O PÉRDIDA DE BENEFICIOS) QUE DERIVE DEL USO O DE LA IMPOSIBILIDAD DE USO DEL SOFTWARE, AUNQUE SE HAYA ADVERTIDO DE LA POSIBILIDAD DE DICHOS DAÑOS.\nEL USUARIO ASUME TODO EL RIESGO EN CUANTO A LA CALIDAD, EL RENDIMIENTO Y LA SEGURIDAD DEL PROGRAMA.
         </div>
     </details>
+    <div>
+        <p class="muted small" align="center" data-i18n="credit">Creado por HK4Q</p>
+    </div>
   </section>
 </main>
+
+<dialog id="qsoDlg">
+  <form id="qsoForm" method="dialog">
+    <h2 id="qfTitle"></h2>
+    <label data-i18n="th.call">Indicativo</label><input type="text" name="call" required maxlength="20" style="text-transform:uppercase">
+    <div class="row">
+      <div><label data-i18n="th.date">Fecha</label><input type="date" name="date" required></div>
+      <div><label>UTC</label><input type="time" name="time" required></div>
+    </div>
+    <div class="row">
+      <div><label>MHz</label><input type="number" name="freq" step="any" min="0"></div>
+      <div><label data-i18n="th.band">Banda</label><input type="text" name="band" data-i18n-ph="qf.bandPh" placeholder="auto"></div>
+      <div><label data-i18n="th.mode">Modo</label><input type="text" name="mode" required style="text-transform:uppercase"></div>
+    </div>
+    <div class="row">
+      <div><label data-i18n="qf.rstS">RST enviado</label><input type="text" name="rst_sent"></div>
+      <div><label data-i18n="qf.rstR">RST recibido</label><input type="text" name="rst_rcvd"></div>
+    </div>
+    <label data-i18n="th.name">Nombre</label><input type="text" name="name">
+    <label data-i18n="th.mail">Correo</label><input type="email" name="email">
+    <div class="row" style="margin-top:14px;justify-content:flex-end">
+      <button type="button" class="auto" id="qfCancel" data-i18n="qf.cancel">Cancelar</button>
+      <button type="submit" class="auto primary" data-i18n="qf.save">Guardar</button>
+    </div>
+  </form>
+</dialog>
 
 <script>
 function togglePopup() {
@@ -420,7 +451,7 @@ es: {
   'prev.title': `Vista previa`, 'dlOne': `Descargar esta QSL`, 'copyOne': `📋 Copiar imagen`,
   'copyOne.title': `Copia la imagen para pegarla en WhatsApp, Telegram, un correo, etc.`,
   'canvas.title': `Arrastra un elemento para moverlo; Supr o Retroceso lo desactiva`,
-  'qso.title': `Contactos`, 'filter.ph': `Filtrar…`, 'dlZip': `Descargar seleccionadas (ZIP)`,
+  'qso.title': `Contactos`, 'filter.ph': `Filtrar…`, 'dlZip': `Descargar QSLs seleccionadas (ZIP)`,
   'th.call': `Indicativo`, 'th.date': `Fecha`, 'th.band': `Banda`, 'th.mode': `Modo`, 'th.name': `Nombre`, 'th.mail': `Correo`, 'th.status': `Estado`,
   'qso.empty': `Carga un archivo ADIF para ver los contactos.`,
   'col.call': `Indicativo`, 'col.date': `Fecha`, 'col.time': `Hora UTC`, 'col.freq': `Frecuencia`,
@@ -458,6 +489,10 @@ es: {
   'copy.ok': `✓ Copiada`, 'copy.log': `QSL de {c} copiada al portapapeles`,
   'copy.fail': `✗ No se pudo copiar`, 'copy.logErr': `Portapapeles: `,
   'noSel': `No hay contactos seleccionados.`,
+  'qf.add': `+ Añadir contacto`, 'qf.editSel': `✎ Editar seleccionado`, 'qf.new': `Nuevo contacto`, 'qf.edit': `Editar contacto`,
+  'qf.rstS': `RST enviado`, 'qf.rstR': `RST recibido`, 'qf.cancel': `Cancelar`, 'qf.save': `Guardar`, 'qf.bandPh': `auto`,
+  'qf.editRow': `Editar contacto`, 'qf.noActive': `Selecciona primero un contacto de la tabla.`,
+  'qf.added': `Contacto añadido: {c}`, 'qf.updated': `Contacto actualizado: {c}`,
   'zip.noLib': `No se pudo cargar JSZip (revisa la conexión a internet).`,
   'zip.done': `ZIP generado con {n} QSL`,
   'api.status': `Servidor respondió {s}`, 'api.error': `Error {s}`,
@@ -537,7 +572,7 @@ en: {
   'prev.title': `Preview`, 'dlOne': `Download this QSL`, 'copyOne': `📋 Copy image`,
   'copyOne.title': `Copies the image so you can paste it into WhatsApp, Telegram, an email, etc.`,
   'canvas.title': `Drag an element to move it; Delete or Backspace turns it off`,
-  'qso.title': `Contacts`, 'filter.ph': `Filter…`, 'dlZip': `Download selected (ZIP)`,
+  'qso.title': `Contacts`, 'filter.ph': `Filter…`, 'dlZip': `Download selected QSLs (ZIP)`,
   'th.call': `Callsign`, 'th.date': `Date`, 'th.band': `Band`, 'th.mode': `Mode`, 'th.name': `Name`, 'th.mail': `Email`, 'th.status': `Status`,
   'qso.empty': `Load an ADIF file to see the contacts.`,
   'col.call': `Callsign`, 'col.date': `Date`, 'col.time': `UTC time`, 'col.freq': `Frequency`,
@@ -575,6 +610,10 @@ en: {
   'copy.ok': `✓ Copied`, 'copy.log': `QSL for {c} copied to the clipboard`,
   'copy.fail': `✗ Could not copy`, 'copy.logErr': `Clipboard: `,
   'noSel': `No contacts selected.`,
+  'qf.add': `+ Add contact`, 'qf.editSel': `✎ Edit selected`, 'qf.new': `New contact`, 'qf.edit': `Edit contact`,
+  'qf.rstS': `RST sent`, 'qf.rstR': `RST received`, 'qf.cancel': `Cancel`, 'qf.save': `Save`, 'qf.bandPh': `auto`,
+  'qf.editRow': `Edit contact`, 'qf.noActive': `Select a contact in the table first.`,
+  'qf.added': `Contact added: {c}`, 'qf.updated': `Contact updated: {c}`,
   'zip.noLib': `Could not load JSZip (check your internet connection).`,
   'zip.done': `ZIP generated with {n} QSL`,
   'api.status': `Server responded {s}`, 'api.error': `Error {s}`,
@@ -1254,7 +1293,7 @@ function renderTable() {
       <td>${hasQrzName(q) ? esc(qrzName(q, true)) : adifName(q) ? esc(qrzName(q, true)) + ' <span class="muted small">(ADIF)</span>' : '<span class="muted">—</span>'}</td>
       <td>${emailOf(q) ? esc(emailOf(q)) + (c?.email ? '' : ' <span class="muted small">(ADIF)</span>') : c ? `<span class="muted">${esc(t('qso.noMail'))}</span>` : '<span class="muted">—</span>'}</td>
       <td class="${cls}">${esc(statusText(st))}</td>
-      <td><button class="icon" data-dl title="${esc(t('qso.dl'))}">⬇</button></td></tr>`;
+      <td><button class="icon" data-edit title="${esc(t('qf.editRow'))}">✎</button><button class="icon" data-dl title="${esc(t('qso.dl'))}">⬇</button></td></tr>`;
   }).join('');
 }
 $('#qsoBody').addEventListener('click', async e => {
@@ -1262,9 +1301,55 @@ $('#qsoBody').addEventListener('click', async e => {
   const q = state.qsos.find(x => x._id === +tr.dataset.id);
   if (e.target.matches('[data-sel]')) { q._sel = e.target.checked; renderTable(); save(); return; }
   if (e.target.matches('[data-dl]')) { download(await qslBlob(q), qslName(q)); return; }
+  if (e.target.matches('[data-edit]')) { openQsoForm(q); return; }
   state.preview = state.qsos.indexOf(q); renderTable(); draw(); save();
 });
-$('#selAll').onchange = e => { visibleQsos().forEach(q => q._sel = e.target.checked); renderTable(); save(); };
+/* ================= Formulario de contacto (añadir / editar) ================= */
+let editingQso = null;   // contacto en edición; null = contacto nuevo
+function openQsoForm(q) {
+  editingQso = q || null;
+  const f = $('#qsoForm').elements, d = q?.qso_date || '', tm = q?.time_on || '';
+  $('#qfTitle').textContent = t(q ? 'qf.edit' : 'qf.new');
+  f.call.value = q?.call || '';
+  f.date.value = /^\d{8}$/.test(d) ? `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}` : new Date().toISOString().slice(0, 10);
+  f.time.value = tm.length >= 4 ? `${tm.slice(0,2)}:${tm.slice(2,4)}` : new Date().toISOString().slice(11, 16);
+  f.freq.value = q?.freq || '';
+  f.band.value = q?.band || '';
+  f.mode.value = q ? modeOf(q) : '';
+  f.rst_sent.value = q?.rst_sent || ''; f.rst_rcvd.value = q?.rst_rcvd || '';
+  f.name.value = q ? adifName(q) : ''; f.email.value = q ? adifEmail(q) : '';
+  $('#qsoDlg').showModal();
+}
+$('#addQso').onclick = () => openQsoForm(null);
+$('#editQso').onclick = () => {
+  const q = state.qsos[state.preview] || state.qsos[0];
+  if (!q) return alert(t('qf.noActive'));
+  openQsoForm(q);
+};
+$('#qfCancel').onclick = () => $('#qsoDlg').close();
+$('#qsoForm').onsubmit = e => {
+  e.preventDefault();
+  const f = e.target.elements, v = n => f[n].value.trim();
+  const q = editingQso || { _id:state.qsos.reduce((m, x) => Math.max(m, x._id), -1) + 1, _sel:true, _status:'' };
+  q.call = v('call').toUpperCase();
+  q.qso_date = v('date').replace(/-/g, '');
+  q.time_on = v('time').replace(':', '');
+  q.freq = v('freq');
+  q.band = v('band').toLowerCase();
+  if (!q.band) delete q.band;        // sin banda explícita, se deduce de la frecuencia
+  if (v('mode').toUpperCase() !== modeOf(q)) delete q.submode;
+  q.mode = v('mode').toUpperCase();
+  q.rst_sent = v('rst_sent'); q.rst_rcvd = v('rst_rcvd');
+  // Si había NAME_INTL se actualiza también, para que no tape el nombre editado
+  if ('name_intl' in q) q.name_intl = v('name');
+  q.name = v('name'); q.email = v('email');
+  if (!editingQso) { state.qsos.push(q); state.preview = state.qsos.length - 1; }
+  else state.preview = state.qsos.indexOf(q);
+  $('#qsoDlg').close();
+  renderTable(); draw(); save();
+  log(t(editingQso ? 'qf.updated' : 'qf.added', { c:q.call }), 'ok');
+};
+$('#selAll').onchange =e => { visibleQsos().forEach(q => q._sel = e.target.checked); renderTable(); save(); };
 $('#filter').oninput = renderTable;
 
 $('#dlOne').onclick = async () => { const q = previewQso(); download(await qslBlob(q), qslName(q)); };
