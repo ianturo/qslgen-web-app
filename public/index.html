@@ -36,21 +36,23 @@
   body{margin:0;background:var(--bg);color:var(--text);font:14px/1.45 Arial,system-ui,sans-serif}
   h1{font:700 22px Arial,sans-serif;letter-spacing:.5px;margin:0}
   h2{font:600 15px Arial,sans-serif;margin:0}
+  .highlight { font-weight: bold; padding: 5px; border-radius:4px; animation: blink 3s ease-in-out;}
+  @keyframes blink {0%, 100% { background-color: rgba(0, 0, 0, 0.575); }  50% { background-color: rgba(0, 255, 55, 0.301); }}
   a{color:var(--accent2)}
   input,select,textarea,button{font:inherit;color:inherit}
   input[type=text],input[type=password],input[type=email],input[type=number],select,textarea{
-    width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;outline:none}
+    width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 6px;outline:none}
   input:focus,select:focus,textarea:focus{border-color:var(--accent)}
   textarea{resize:vertical;min-height:70px;font-family:ui-monospace,Consolas,monospace;font-size:13px}
   input[type=color]{width:40px;height:30px;padding:0;border:1px solid var(--line);border-radius:6px;background:none}
-  label{display:block;color:var(--muted);font-size:12px;margin:8px 0 3px}
+  label{display:block;color:var(--muted);font-size:12px;margin:6px 0 3px}
   label.inline{display:flex;align-items:center;gap:6px;color:var(--text);font-size:13px;margin:6px 0}
   button{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:7px 12px;cursor:pointer}
   button:hover{border-color:var(--accent)}
   button.primary{background:var(--accent);border-color:var(--accent);color:var(--onAccent);font-weight:600}
   button.primary:hover{background:var(--accent2)}
   button:disabled{opacity:.5;cursor:not-allowed}
-  .row{display:flex;gap:8px;align-items:flex-end}
+  .row{display:flex;gap:6px;align-items:flex-end}
   .row>*{flex:1;min-width:0}
   .row>.auto{flex:0 0 auto}
   .muted{color:var(--muted)} .small{font-size:12px}
@@ -60,15 +62,15 @@
   main{display:grid;grid-template-columns:380px 1fr;gap:16px;padding:16px;align-items:start}
   aside{display:flex;flex-direction:column;gap:12px}
   details{background:var(--panel);border:1px solid var(--line);border-radius:10px}
-  details>summary{cursor:pointer;padding:12px 14px;font-weight:600;list-style:none;display:flex;gap:8px;align-items:center}
+  details>summary{cursor:pointer;padding:12px 14px;font-weight:600;list-style:none;display:flex;gap:6px;align-items:center}
   details>summary::-webkit-details-marker{display:none}
   details>summary::before{content:'▸';color:var(--accent);transition:transform .15s}
   details[open]>summary::before{transform:rotate(90deg)}
   details>.body{padding:0 14px 14px}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
-  .canvasWrap{position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--line);background:#000}
+  .canvasWrap{position:relative;border-radius:6px;overflow:hidden;border:1px solid var(--line);background:#000}
   #preview{display:block;width:100%;height:auto;touch-action:none;cursor:default;outline:none}
-  .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:10px}
   .chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
   .chip{font:12px ui-monospace,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:1px 6px;cursor:pointer}
   .chip:hover{border-color:var(--accent)}
@@ -79,22 +81,22 @@
   .logo:hover{border-color:var(--accent2)}
   .logo.on{border:2px solid var(--accent);padding:3px}
   .logo.on::after{content:'✓';position:absolute;top:-6px;right:-6px;background:var(--accent);color:var(--onAccent);border-radius:50%;width:16px;height:16px;font-size:11px;line-height:16px;text-align:center;font-weight:700}
-  .elList{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+  .elList{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
   .elList button{padding:4px 9px;font-size:12px}
   .elList button.sel{border-color:var(--accent);color:var(--accent2)}
   .elList button.hidden{opacity:.45;text-decoration:line-through}
   table{width:100%;border-collapse:collapse;font-size:13px}
-  th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+  th,td{padding:6px 6px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
   th{color:var(--muted);font-weight:600;position:sticky;top:0;background:var(--panel)}
   tbody tr{cursor:pointer}
   tbody tr:hover{background:var(--panel2)}
   tbody tr.active{background:var(--rowActive)}
-  .tableWrap{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:8px}
+  .tableWrap{max-height:420px;overflow:auto;border:1px solid var(--line);border-radius:6px}
   .st-ok{color:var(--ok)} .st-err{color:var(--err)} .st-info{color:var(--info)}
   .icon{background:none;border:none;padding:2px 5px;cursor:pointer;font-size:15px}
-  #log{max-height:160px;overflow:auto;font:12px ui-monospace,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;margin-top:8px;white-space:pre-wrap}
-  .banner{background:var(--bannerBg);border:1px solid var(--err);color:var(--bannerText);padding:10px 14px;border-radius:8px;margin:16px 16px 0}
-  .drop{border:2px dashed var(--line);border-radius:8px;padding:14px;text-align:center;color:var(--muted);cursor:pointer}
+  #log{max-height:160px;overflow:auto;font:12px ui-monospace,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 6px;margin-top:6px;white-space:pre-wrap}
+  .banner{background:var(--bannerBg);border:1px solid var(--err);color:var(--bannerText);padding:10px 14px;border-radius:6px;margin:16px 16px 0}
+  .drop{border:2px dashed var(--line);border-radius:6px;padding:14px;text-align:center;color:var(--muted);cursor:pointer}
   .drop:hover,.drop.over{border-color:var(--accent);color:var(--text)}
   #login{position:fixed;inset:0;background:var(--loginBg);display:flex;align-items:center;justify-content:center;z-index:10;padding:16px}
   #login .card{width:100%;max-width:380px;padding:28px;text-align:center}
@@ -102,7 +104,7 @@
   dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:18px;width:min(520px,92vw)}
   dialog::backdrop{background:rgba(0,0,0,.6)}
   dialog h2{margin-bottom:6px}
-  .progress{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin-top:8px;display:none}
+  .progress{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin-top:6px;display:none}
   .progress>div{height:100%;width:0;background:var(--accent);transition:width .2s}
   @media (max-width:980px){ main{grid-template-columns:1fr;padding:12px} header{padding:10px 16px;flex-wrap:wrap} }
 </style>
@@ -175,15 +177,15 @@
 
 <main>
   <aside>
-    <!-- 1. ADIF -->
+    <!-- 1. ADIF --
     <details open>
       <summary data-i18n="s1">1. Archivo ADIF</summary>
       <div class="body">
         <div class="drop" id="adifDrop"><span data-i18n-html="adif.drop">Arrastra aquí tu archivo <b>.adi / .adif</b> o haz clic para elegirlo</span>
           <input type="file" id="adifFile" accept=".adi,.adif,.txt" hidden></div>
-        <p class="small muted" id="adifInfo" style="margin:8px 0 0"></p>
+        <p class="small muted" id="adifInfo" style="margin:6px 0 0"></p>
       </div>
-    </details>
+    </details> -->
 
     <!-- 2. Estación -->
     <details open>
@@ -317,12 +319,19 @@
 
     <div class="card">
       <div class="toolbar">
-        <h2 data-i18n="qso.title">Contactos</h2><span class="muted small" id="qsoCount"></span>
+        <h2 class="highlight" data-i18n="qso.title">1. Contactos</h2>
+        <span class="muted small" id="qsoCount"></span>
+        <span style="flex:1" data-i18n="s1" align="right">Archivo ADIF</span>
+        <div class="drop" id="adifDrop"><span data-i18n-html="adif.drop">Arrastra aquí tu archivo <b>.adi / .adif</b> o haz clic para elegirlo</span>
+          <input type="file" id="adifFile" accept=".adi,.adif,.txt" hidden></div>
+        <p class="small muted" id="adifInfo" style="margin:6px 0 0"></p>
+      </div>
+      <div class="toolbar">
         <span style="flex:1"></span>
-        <input type="text" id="filter" placeholder="Filtrar…" data-i18n-ph="filter.ph" style="width:160px">
         <button id="addQso" data-i18n="qf.add">+ Añadir contacto</button>
         <button id="editQso" data-i18n="qf.editSel">✎ Editar seleccionado</button>
-        <button id="dlZip" data-i18n="dlZip">Descargar QSLs seleccionadas (ZIP)</button>
+        <button id="dlZip" data-i18n="dlZip" title="Descargar QSLs seleccionadas a un archivo ZIP -- Download the selected QSLs in a ZIP file">💾 seleccionadas (ZIP)</button>
+        <input type="text" id="filter" placeholder="Filtrar…" data-i18n-ph="filter.ph" style="width:160px">
       </div>
       <div class="tableWrap">
         <table>
@@ -358,11 +367,11 @@
     <div class="row">
       <div><label>MHz</label><input type="number" name="freq" step="any" min="0"></div>
       <div><label data-i18n="th.band">Banda</label><input type="text" name="band" data-i18n-ph="qf.bandPh" placeholder="auto"></div>
-      <div><label data-i18n="th.mode">Modo</label><input type="text" name="mode" required style="text-transform:uppercase"></div>
+      <div><label data-i18n="th.mode">Modo</label><input type="text" name="mode" placeholder="SSB" required style="text-transform:uppercase"></div>
     </div>
     <div class="row">
-      <div><label data-i18n="qf.rstS">RST enviado</label><input type="text" name="rst_sent"></div>
-      <div><label data-i18n="qf.rstR">RST recibido</label><input type="text" name="rst_rcvd"></div>
+      <div><label data-i18n="qf.rstS">RST enviado</label><input type="text" placeholder="59" name="rst_sent"></div>
+      <div><label data-i18n="qf.rstR">RST recibido</label><input type="text" placeholder="59" name="rst_rcvd"></div>
     </div>
     <label data-i18n="th.name">Nombre</label><input type="text" name="name">
     <label data-i18n="th.mail">Correo</label><input type="email" name="email">
@@ -372,13 +381,7 @@
     </div>
   </form>
 </dialog>
-
-<script>
-function togglePopup() {
-var popup = document.getElementById("myPopup");
-popup.classList.toggle("show");
-}
-</script>    
+ 
 
 <script>
 'use strict';
@@ -419,7 +422,7 @@ es: {
   'hdr.change': `Cambiar indicativo`,
   'hdr.reset': `🗑 Borrar todo`,
   'fileWarn': `Abriste la página como archivo local. La consulta a QRZ y el envío de correos necesitan el servidor: ejecuta <code>python server.py</code> y entra a <a href="http://localhost:8000">http://localhost:8000</a>.`,
-  's1': `1. Archivo ADIF`,
+  's1': `Archivo ADIF`,
   'adif.drop': `Arrastra aquí tu archivo <b>.adi / .adif</b> o haz clic para elegirlo`,
   's2': `2. Mi estación`,
   'st.call': `Mi indicativo`, 'st.name': `Nombre`, 'st.qth': `QTH / Ciudad`, 'st.country': `País`,
@@ -453,7 +456,7 @@ es: {
   'prev.title': `Vista previa`, 'dlOne': `Descargar esta QSL`, 'copyOne': `📋 Copiar imagen`,
   'copyOne.title': `Copia la imagen para pegarla en WhatsApp, Telegram, un correo, etc.`,
   'canvas.title': `Arrastra un elemento para moverlo; Supr o Retroceso lo desactiva`,
-  'qso.title': `Contactos`, 'filter.ph': `Filtrar…`, 'dlZip': `Descargar QSLs seleccionadas (ZIP)`,
+  'qso.title': `1. Contactos`, 'filter.ph': `Filtrar…`, 'dlZip': `💾 seleccionadas (ZIP)`,
   'th.call': `Indicativo`, 'th.date': `Fecha`, 'th.band': `Banda`, 'th.mode': `Modo`, 'th.name': `Nombre`, 'th.mail': `Correo`, 'th.status': `Estado`,
   'qso.empty': `Carga un archivo ADIF para ver los contactos.`,
   'col.call': `Indicativo`, 'col.date': `Fecha`, 'col.time': `Hora UTC`, 'col.freq': `Frecuencia`,
@@ -540,7 +543,7 @@ en: {
   'hdr.change': `Change callsign`,
   'hdr.reset': `🗑 Delete all`,
   'fileWarn': `You opened the page as a local file. The QRZ lookup and email sending need the server: run <code>python server.py</code> and go to <a href="http://localhost:8000">http://localhost:8000</a>.`,
-  's1': `1. ADIF file`,
+  's1': `ADIF file`,
   'adif.drop': `Drag your <b>.adi / .adif</b> file here or click to choose it`,
   's2': `2. My station`,
   'st.call': `My callsign`, 'st.name': `Name`, 'st.qth': `QTH / City`, 'st.country': `Country`,
@@ -574,7 +577,7 @@ en: {
   'prev.title': `Preview`, 'dlOne': `Download this QSL`, 'copyOne': `📋 Copy image`,
   'copyOne.title': `Copies the image so you can paste it into WhatsApp, Telegram, an email, etc.`,
   'canvas.title': `Drag an element to move it; Delete or Backspace turns it off`,
-  'qso.title': `Contacts`, 'filter.ph': `Filter…`, 'dlZip': `Download selected QSLs (ZIP)`,
+  'qso.title': `1. Contacts`, 'filter.ph': `Filter…`, 'dlZip': `💾 selected (ZIP)`,
   'th.call': `Callsign`, 'th.date': `Date`, 'th.band': `Band`, 'th.mode': `Mode`, 'th.name': `Name`, 'th.mail': `Email`, 'th.status': `Status`,
   'qso.empty': `Load an ADIF file to see the contacts.`,
   'col.call': `Callsign`, 'col.date': `Date`, 'col.time': `UTC time`, 'col.freq': `Frequency`,
@@ -1171,14 +1174,14 @@ function renderEditor() {
   if (!el) { $('#elEditor').innerHTML = `<p class="small muted" style="margin:4px 0">${esc(t('ed.none'))}</p>`; return; }
   const fontOpts = FONTS.map(f => `<option ${f === el.font ? 'selected' : ''}>${f}</option>`).join('');
   let h = `<div class="row"><div><label>${t('ed.name')}</label><input type="text" data-e="label" value="${esc(el.label)}"></div>
-    <label class="inline auto" style="margin-bottom:8px"><input type="checkbox" data-e="visible" ${el.visible ? 'checked' : ''}> ${t('ed.visible')}</label></div>`;
+    <label class="inline auto" style="margin-bottom:6px"><input type="checkbox" data-e="visible" ${el.visible ? 'checked' : ''}> ${t('ed.visible')}</label></div>`;
   if (el.type === 'image') {
     $('#elEditor').innerHTML = h + `<div class="row">
       <div><label>X</label><input type="number" data-e="x" value="${el.x}"></div>
       <div><label>Y</label><input type="number" data-e="y" value="${el.y}"></div>
       <div><label>${t('ed.width')}</label><input type="number" data-e="w" min="20" max="1240" value="${el.w}"></div>
       <div><label>${t('ed.opacity')}</label><input type="number" data-e="opacity" min="0" max="1" step="0.05" value="${el.opacity}"></div>
-    </div><button id="delEl" style="margin-top:8px">${t('ed.removeFromQsl')}</button>`;
+    </div><button id="delEl" style="margin-top:6px">${t('ed.removeFromQsl')}</button>`;
     return;
   }
   if (el.type === 'text') h += `<label>${t('ed.text')}</label><textarea data-e="text" rows="4">${esc(el.text)}</textarea>`;
@@ -1192,7 +1195,7 @@ function renderEditor() {
       <div><label>${t('ed.font')}</label><select data-e="font">${fontOpts}</select></div>
       ${el.type === 'text' ? `<div><label>${t('ed.align')}</label><select data-e="align">
         ${['left','center','right'].map(a => `<option value="${a}" ${a === el.align ? 'selected' : ''}>${t('align.' + a)}</option>`).join('')}</select></div>` : ''}
-      <label class="inline auto" style="margin-bottom:8px"><input type="checkbox" data-e="bold" ${el.bold ? 'checked' : ''}> ${t('ed.bold')}</label>
+      <label class="inline auto" style="margin-bottom:6px"><input type="checkbox" data-e="bold" ${el.bold ? 'checked' : ''}> ${t('ed.bold')}</label>
     </div>
     <div class="row">
       <div class="auto"><label>${t('ed.color')}</label><input type="color" data-e="color" value="${el.color}"></div>`;
@@ -1207,8 +1210,8 @@ function renderEditor() {
     </div>
     <label>${t('ed.cols')}</label>
     <div class="chips">${Object.keys(COLS).map(k =>
-      `<label class="inline" style="margin:0 8px 0 0"><input type="checkbox" data-col="${k}" ${el.cols.includes(k) ? 'checked' : ''}>${colName(k)}</label>`).join('')}</div>`;
-  if (el.id.startsWith('custom')) h += `<button id="delEl" style="margin-top:8px">${t('ed.deleteEl')}</button>`;
+      `<label class="inline" style="margin:0 6px 0 0"><input type="checkbox" data-col="${k}" ${el.cols.includes(k) ? 'checked' : ''}>${colName(k)}</label>`).join('')}</div>`;
+  if (el.id.startsWith('custom')) h += `<button id="delEl" style="margin-top:6px">${t('ed.deleteEl')}</button>`;
   $('#elEditor').innerHTML = h;
 }
 function syncXY() {
@@ -1317,8 +1320,8 @@ function openQsoForm(q) {
   f.time.value = tm.length >= 4 ? `${tm.slice(0,2)}:${tm.slice(2,4)}` : new Date().toISOString().slice(11, 16);
   f.freq.value = q?.freq || '';
   f.band.value = q?.band || '';
-  f.mode.value = q ? modeOf(q) : '';
-  f.rst_sent.value = q?.rst_sent || ''; f.rst_rcvd.value = q?.rst_rcvd || '';
+  f.mode.value = q ? modeOf(q) : 'SSB';
+  f.rst_sent.value = q?.rst_sent || '59'; f.rst_rcvd.value = q?.rst_rcvd || '59';
   f.name.value = q ? adifName(q) : ''; f.email.value = q ? adifEmail(q) : '';
   $('#qsoDlg').showModal();
 }
