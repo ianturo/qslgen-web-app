@@ -177,7 +177,7 @@
 
 <main>
   <aside>
-    <!-- 1. ADIF --
+    <!-- 1. ADIF (movido a la toolbar de contactos)
     <details open>
       <summary data-i18n="s1">1. Archivo ADIF</summary>
       <div class="body">
@@ -323,14 +323,15 @@
         <span class="muted small" id="qsoCount"></span>
         <span style="flex:1" data-i18n="s1" align="right">Archivo ADIF</span>
         <div class="drop" id="adifDrop"><span data-i18n-html="adif.drop">Arrastra aquí tu archivo <b>.adi / .adif</b> o haz clic para elegirlo</span>
-          <input type="file" id="adifFile" accept=".adi,.adif,.txt" hidden></div>
-        <p class="small muted" id="adifInfo" style="margin:6px 0 0"></p>
+          <input type="file" id="adifFile" accept=".adi,.adif,.txt" hidden>
+        </div>
       </div>
       <div class="toolbar">
         <span style="flex:1"></span>
         <button id="addQso" data-i18n="qf.add">+ Añadir contacto</button>
         <button id="editQso" data-i18n="qf.editSel">✎ Editar seleccionado</button>
         <button id="dlZip" data-i18n="dlZip" title="Descargar QSLs seleccionadas a un archivo ZIP -- Download the selected QSLs in a ZIP file">💾 seleccionadas (ZIP)</button>
+        <button id="expAdif" data-i18n="expAdif" title="Exportar los contactos seleccionados como archivo ADIF -- Export the selected contacts as an ADIF file">📤 Exportar ADIF</button>
         <input type="text" id="filter" placeholder="Filtrar…" data-i18n-ph="filter.ph" style="width:160px">
       </div>
       <div class="tableWrap">
@@ -362,7 +363,7 @@
     <label data-i18n="th.call">Indicativo</label><input type="text" name="call" required maxlength="20" style="text-transform:uppercase">
     <div class="row">
       <div><label data-i18n="th.date">Fecha</label><input type="date" name="date" required></div>
-      <div><label>UTC</label><input type="time" name="time" required></div>
+      <div><label>UTC</label><input type="text" name="time" required placeholder="HH:MM" maxlength="5" inputmode="numeric" pattern="([01][0-9]|2[0-3]):[0-5][0-9]" title="HH:MM (24h)"></div>
     </div>
     <div class="row">
       <div><label>MHz</label><input type="number" name="freq" step="any" min="0"></div>
@@ -456,7 +457,7 @@ es: {
   'prev.title': `Vista previa`, 'dlOne': `Descargar esta QSL`, 'copyOne': `📋 Copiar imagen`,
   'copyOne.title': `Copia la imagen para pegarla en WhatsApp, Telegram, un correo, etc.`,
   'canvas.title': `Arrastra un elemento para moverlo; Supr o Retroceso lo desactiva`,
-  'qso.title': `1. Contactos`, 'filter.ph': `Filtrar…`, 'dlZip': `💾 seleccionadas (ZIP)`,
+  'qso.title': `1. Contactos`, 'filter.ph': `Filtrar…`, 'dlZip': `💾 seleccionadas (ZIP)`, 'expAdif': `📤 Exportar ADIF`, 'expAdif.log': `ADIF exportado: {n} contactos`,
   'th.call': `Indicativo`, 'th.date': `Fecha`, 'th.band': `Banda`, 'th.mode': `Modo`, 'th.name': `Nombre`, 'th.mail': `Correo`, 'th.status': `Estado`,
   'qso.empty': `Carga un archivo ADIF para ver los contactos.`,
   'col.call': `Indicativo`, 'col.date': `Fecha`, 'col.time': `Hora UTC`, 'col.freq': `Frecuencia`,
@@ -577,7 +578,7 @@ en: {
   'prev.title': `Preview`, 'dlOne': `Download this QSL`, 'copyOne': `📋 Copy image`,
   'copyOne.title': `Copies the image so you can paste it into WhatsApp, Telegram, an email, etc.`,
   'canvas.title': `Drag an element to move it; Delete or Backspace turns it off`,
-  'qso.title': `1. Contacts`, 'filter.ph': `Filter…`, 'dlZip': `💾 selected (ZIP)`,
+  'qso.title': `1. Contacts`, 'filter.ph': `Filter…`, 'dlZip': `💾 selected (ZIP)`, 'expAdif': `📤 Export ADIF`, 'expAdif.log': `ADIF exported: {n} contacts`,
   'th.call': `Callsign`, 'th.date': `Date`, 'th.band': `Band`, 'th.mode': `Mode`, 'th.name': `Name`, 'th.mail': `Email`, 'th.status': `Status`,
   'qso.empty': `Load an ADIF file to see the contacts.`,
   'col.call': `Callsign`, 'col.date': `Date`, 'col.time': `UTC time`, 'col.freq': `Frequency`,
@@ -773,6 +774,17 @@ function login(call) {
 }
 
 /* ================= ADIF ================= */
+// Genera un ADIF a partir de los contactos; se omiten los campos internos (_id, _sel, _status...).
+// Las longitudes son en bytes UTF-8, como exige el formato.
+function buildADIF(qsos) {
+  const enc = new TextEncoder();
+  const field = (k, v) => `<${k.toUpperCase()}:${enc.encode(v).length}>${v}`;
+  const head = `QSL Generator ADIF export\n${field('adif_ver', '3.1.4')} ${field('programid', 'QSLGen')} <EOH>\n\n`;
+  const body = qsos.map(q => Object.keys(q)
+    .filter(k => k[0] !== '_' && q[k] !== undefined && q[k] !== null && q[k] !== '' && typeof q[k] !== 'object')
+    .map(k => field(k, String(q[k]))).join(' ') + ' <EOR>').join('\n');
+  return head + body + '\n';
+}
 function parseADIF(buf) {
   // Se recorre como latin1 (1 byte = 1 carácter) porque las longitudes del ADIF son en bytes;
   // luego cada valor se decodifica como UTF-8 si es válido.
@@ -1284,7 +1296,6 @@ function renderTable() {
   const list = visibleQsos();
   const n = state.qsos.filter(q => q._sel).length;
   $('#qsoCount').textContent = state.qsos.length ? t('qso.count', { a:state.qsos.length, b:n }) + (state.fileName ? ' · ' + state.fileName : '') : '';
-  $('#adifInfo').textContent = state.fileName ? t('adif.info', { f:state.fileName, n:state.qsos.length }) : '';
   $('#selAll').checked = list.length > 0 && list.every(q => q._sel);
   if (!state.qsos.length) { $('#qsoBody').innerHTML = `<tr><td colspan="12" class="muted">${esc(t('qso.empty'))}</td></tr>`; return; }
   $('#qsoBody').innerHTML = list.map(q => {
@@ -1356,6 +1367,12 @@ $('#qsoForm').onsubmit = e => {
 };
 $('#selAll').onchange =e => { visibleQsos().forEach(q => q._sel = e.target.checked); renderTable(); save(); };
 $('#filter').oninput = renderTable;
+$('#expAdif').onclick = () => {
+  const sel = state.qsos.filter(q => q._sel);
+  if (!sel.length) return alert(t('noSel'));
+  download(new Blob([buildADIF(sel)], { type:'text/plain;charset=utf-8' }), 'contactos.adi');
+  log(t('expAdif.log', { n:sel.length }), 'ok');
+};
 
 $('#dlOne').onclick = async () => { const q = previewQso(); download(await qslBlob(q), qslName(q)); };
 // El portapapeles solo admite PNG y solo funciona en contexto seguro (https o localhost)
