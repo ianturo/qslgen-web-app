@@ -11,6 +11,7 @@
   gtag('config', 'G-89C1656QLH');
 </script>
 <meta charset="utf-8">
+<meta name="description" content="Turn your ADIF log into customized electronic QSL cards, enrich contacts with QRZ.com and send them by Gmail.">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Generador de QSL</title>
 <link rel="icon" href="favicon.ico">
@@ -98,12 +99,12 @@
   .banner{background:var(--bannerBg);border:1px solid var(--err);color:var(--bannerText);padding:10px 14px;border-radius:6px;margin:16px 16px 0}
   .drop{border:2px dashed var(--line);border-radius:6px;padding:14px;text-align:center;color:var(--muted);cursor:pointer}
   .drop:hover,.drop.over{border-color:var(--accent);color:var(--text)}
-  #login{position:fixed;inset:0;background:var(--loginBg);display:flex;align-items:center;justify-content:center;z-index:10;padding:16px}
-  #login .card{width:100%;max-width:380px;padding:28px;text-align:center}
-  #login input{text-align:center;font:700 26px Oswald;text-transform:uppercase;letter-spacing:2px;margin:14px 0}
-  dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:18px;width:min(520px,92vw)}
+  #login{position:fixed;inset:0;background:var(--loginBg);display:flex;align-items:center;justify-content:center;z-index:10;padding:20px}
+  #login .card{width:100%;max-width:380px;padding:18px;text-align:center}
+  #login input{text-align:center;font:700 26px Oswald;text-transform:uppercase;letter-spacing:2px;margin:8px 0}
+  dialog{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:12px;width:min(520px,92vw)}
   dialog::backdrop{background:rgba(0,0,0,.6)}
-  dialog h2{margin-bottom:6px}
+  dialog h2{margin-bottom:4px}
   .progress{height:6px;background:var(--bg);border-radius:3px;overflow:hidden;margin-top:6px;display:none}
   .progress>div{height:100%;width:0;background:var(--accent);transition:width .2s}
   @media (max-width:980px){ main{grid-template-columns:1fr;padding:12px} header{padding:10px 16px;flex-wrap:wrap} }
@@ -141,22 +142,21 @@
 <!-- ====== Acceso por indicativo ====== -->
 <div id="login">
   <div class="card">
-    <img src="post-card.png" width="250" height="163" >
-    <h1 data-i18n="login.title">📻 Generador de QSL 📨</h1>
-    <h1>v1.0.5</h1>
+    <img src="post-card.png" width="190" height="130" alt="QslGen Web App Logo" >
+    <h1 data-i18n="login.title">Generador de QSL</h1>
+    <h2>📻  v1.0.5  📨</h2>
     <p class="muted small" data-i18n="login.intro">Ingresa tu indicativo para comenzar. Tus datos se guardan solo en este navegador, nunca en el servidor. Tú decides si también se recuerdan el Session ID de QRZ y la contraseña de Gmail.</p>
-    <p class="muted small" data-i18n="credit">Creado por HK4Q</p>
     <input id="loginCall" type="text" placeholder="HK4AAA" autocomplete="off" maxlength="15">
     <button class="primary" id="loginBtn" style="width:100%" data-i18n="login.enter">Entrar</button>
     <p class="small" style="margin:14px 0 0"><a href="manual.html" target="_blank" data-i18n="manual">📖 Manual de usuario</a></p>
     <button class="themeBtn small" onclick="toggleTheme()" style="margin-top:10px"></button>
-    <button class="langBtn small" onclick="toggleLang()" style="margin-top:10px"></button>
+    <button class="langBtn small" onclick="toggleLang()" style="margin-top:10px"></button><br><br>
     <details>
         <summary data-i18n="disclaimer_title">EXCLUSIÓN DE GARANTÍAS Y LIMITACIÓN DE RESPONSABILIDAD</summary>
         <div class="muted small" data-i18n="disclaimer" align="center">EL SOFTWARE SE PROPORCIONA "TAL CUAL" Y "SEGÚN DISPONIBILIDAD", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O IMPLÍCITA, INCLUIDAS, ENTRE OTRAS, LAS GARANTÍAS DE COMERCIABILIDAD, IDONEIDAD PARA UN FIN PARTICULAR Y NO INFRACCIÓN.\nEN NINGÚN CASO EL AUTOR, LOS DESARROLLADORES O LOS TITULARES DEL COPYRIGHT SERÁN RESPONSABLES DE NINGÚN DAÑO DIRECTO, INDIRECTO, INCIDENTAL, ESPECIAL, PUNITIVO O CONSECUENTE (INCLUYENDO, PÉRDIDA DE DATOS, INTERRUPCIÓN DE LA ACTIVIDAD COMERCIAL O PÉRDIDA DE BENEFICIOS) QUE DERIVE DEL USO O DE LA IMPOSIBILIDAD DE USO DEL SOFTWARE, AUNQUE SE HAYA ADVERTIDO DE LA POSIBILIDAD DE DICHOS DAÑOS.\nEL USUARIO ASUME TODO EL RIESGO EN CUANTO A LA CALIDAD, EL RENDIMIENTO Y LA SEGURIDAD DEL PROGRAMA.
         </div>
     </details>
-  <p class="muted small"><a href="https://github.com/ianturo/qslgen-web-app/" target="_blank">QSLGen Web App on GitHub</a></p>
+  <p class="muted small"><a href="https://github.com/ianturo/qslgen-web-app/" target="_blank">QSLGen Web App on GitHub - created by HK4Q</a></p>
   </div>
 </div>
 
@@ -328,8 +328,8 @@
         </div>
         <button id="addQso" data-i18n="qf.add">+ Añadir contacto</button>
         <button id="editQso" data-i18n="qf.editSel">✎ Editar seleccionado</button>
-        <button id="dlZip" data-i18n="dlZip" title="Descargar QSLs seleccionadas a un archivo ZIP -- Download the selected QSLs in a ZIP file">💾 seleccionadas (ZIP)</button>
-        <button id="expAdif" data-i18n="expAdif" title="Exportar los contactos seleccionados como archivo ADIF -- Export the selected contacts as an ADIF file">📤 Exportar ADIF</button>
+        <button id="expAdif" data-i18n="expAdif" data-i18n-title="exp.title" title="Exportar los contactos seleccionados como archivo ADIF">📤 Exportar ADIF</button>
+        <button id="dlZip" data-i18n="dlZip" data-i18n-title="dl.title" title="Descargar QSLs seleccionadas a un archivo ZIP">💾 seleccionadas (ZIP)</button>
         <span style="flex:1"></span><input type="text" id="filter" placeholder="Filtrar…" data-i18n-ph="filter.ph" style="width:160px">
       </div>
       <div class="tableWrap">
@@ -410,10 +410,10 @@ const titleCase = s => String(s || '').toLowerCase().replace(/(^|[\s\-'"(])(\p{L
 const I18N = {
 es: {
   'title': `Generador de QSL v1.0.5`,
-  'credit': `v1.0.5 - Creado por HK4Q`,
+  'credit': `Creado por HK4Q`,
   'disclaimer_title':'EXCLUSIÓN DE GARANTÍAS Y LIMITACIÓN DE RESPONSABILIDAD',
   'disclaimer':'EL SOFTWARE SE PROPORCIONA "TAL CUAL" Y "SEGÚN DISPONIBILIDAD", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O IMPLÍCITA, INCLUIDAS, ENTRE OTRAS, LAS GARANTÍAS DE COMERCIABILIDAD, IDONEIDAD PARA UN FIN PARTICULAR Y NO INFRACCIÓN.\nEN NINGÚN CASO EL AUTOR, LOS DESARROLLADORES O LOS TITULARES DEL COPYRIGHT SERÁN RESPONSABLES DE NINGÚN DAÑO DIRECTO, INDIRECTO, INCIDENTAL, ESPECIAL, PUNITIVO O CONSECUENTE (INCLUYENDO, PÉRDIDA DE DATOS, INTERRUPCIÓN DE LA ACTIVIDAD COMERCIAL O PÉRDIDA DE BENEFICIOS) QUE DERIVE DEL USO O DE LA IMPOSIBILIDAD DE USO DEL SOFTWARE, AUNQUE SE HAYA ADVERTIDO DE LA POSIBILIDAD DE DICHOS DAÑOS.\nEL USUARIO ASUME TODO EL RIESGO EN CUANTO A LA CALIDAD, EL RENDIMIENTO Y LA SEGURIDAD DEL PROGRAMA.',
-  'login.title': `📻 Generador de QSL 📨`,
+  'login.title': `QSL Generator Web App`,
   'login.intro': `Ingresa tu indicativo para comenzar. Tus datos se guardan solo en este navegador, nunca en el servidor. Tú decides si también se recuerdan el Session ID de QRZ y la contraseña de Gmail.`,
   'login.enter': `Entrar`,
   'manual': `📖 Manual de usuario`,
@@ -455,7 +455,8 @@ es: {
   'prev.title': `Vista previa`, 'dlOne': `Descargar esta QSL`, 'copyOne': `📋 Copiar imagen`,
   'copyOne.title': `Copia la imagen para pegarla en WhatsApp, Telegram, un correo, etc.`,
   'canvas.title': `Arrastra un elemento para moverlo; Supr o Retroceso lo desactiva`,
-  'qso.title': `1. Contactos`, 'filter.ph': `Filtrar…`, 'dlZip': `💾 seleccionadas (ZIP)`, 'expAdif': `📤 Exportar ADIF`, 'expAdif.log': `ADIF exportado: {n} contactos`,
+  'qso.title': `1. Contactos`, 'filter.ph': `Filtrar…`, 'dlZip': `💾 seleccionadas (ZIP)`, 'dl.title':"Descargar QSLs seleccionadas a un archivo ZIP",
+  'expAdif': `📤 Exportar ADIF`, 'exp.title':'Exportar los contactos seleccionados como archivo ADIF', 'expAdif.log': `ADIF exportado: {n} contactos`,
   'th.call': `Indicativo`, 'th.date': `Fecha`, 'th.band': `Banda`, 'th.mode': `Modo`, 'th.name': `Nombre`, 'th.mail': `Correo`, 'th.status': `Estado`,
   'qso.empty': `Carga un archivo ADIF para ver los contactos.`,
   'col.call': `Indicativo`, 'col.date': `Fecha`, 'col.time': `Hora UTC`, 'col.freq': `Frecuencia`,
@@ -530,11 +531,11 @@ es: {
   'confirm.wipe': `⚠ ATENCIÓN: se borrarán TODOS los datos guardados en este navegador:\n\n• Contactos cargados del ADIF y estado de los envíos\n• Datos de la estación, diseño de la QSL, fondo e iconos personales\n• Session ID de QRZ y datos consultados\n• Cuenta de Gmail, contraseña de aplicación y mensaje del correo\n\nEsta acción no se puede deshacer. ¿Deseas continuar?`,
 },
 en: {
-  'title': `QSL Generator - v1.0.5`,
-  'credit': `v1.0.5 - Created by HK4Q`,
+  'title': `QSL Generator Web App`,
+  'credit': `Created by HK4Q`,
   'disclaimer_title':'DISCLAIMER OF WARRANTIES AND LIMITATION OF LIABILITY',
   'disclaimer':'THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE," WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.\nIN NO EVENT SHALL THE AUTHOR, DEVELOPERS, OR COPYRIGHT HOLDERS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, PUNITIVE, OR CONSEQUENTIAL DAMAGES (INCLUDING LOSS OF DATA, BUSINESS INTERRUPTION, OR LOSS OF PROFITS) ARISING FROM THE USE OR INABILITY TO USE THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.\nTHE USER ASSUMES ALL RISK REGARDING THE QUALITY, PERFORMANCE, AND SECURITY OF THE PROGRAM.',
-  'login.title': `📻 QSL Generator 📨`,
+  'login.title': `QSL Generator Web App`,
   'login.intro': `Enter your callsign to get started. Your data is stored only in this browser, never on the server. You decide whether the QRZ Session ID and the Gmail password are remembered too.`,
   'login.enter': `Enter`,
   'manual': `📖 User manual`,
@@ -576,7 +577,8 @@ en: {
   'prev.title': `Preview`, 'dlOne': `Download this QSL`, 'copyOne': `📋 Copy image`,
   'copyOne.title': `Copies the image so you can paste it into WhatsApp, Telegram, an email, etc.`,
   'canvas.title': `Drag an element to move it; Delete or Backspace turns it off`,
-  'qso.title': `1. Contacts`, 'filter.ph': `Filter…`, 'dlZip': `💾 selected (ZIP)`, 'expAdif': `📤 Export ADIF`, 'expAdif.log': `ADIF exported: {n} contacts`,
+  'qso.title': `1. Contacts`, 'filter.ph': `Filter…`, 'dlZip': `💾 selected (ZIP)`, 'expAdif': `📤 Export ADIF`, 'dl.title':" Download the selected QSLs in a ZIP file",
+  'expAdif.log': `ADIF exported: {n} contacts`, 'exp.title':'Export the selected contacts as an ADIF file',
   'th.call': `Callsign`, 'th.date': `Date`, 'th.band': `Band`, 'th.mode': `Mode`, 'th.name': `Name`, 'th.mail': `Email`, 'th.status': `Status`,
   'qso.empty': `Load an ADIF file to see the contacts.`,
   'col.call': `Callsign`, 'col.date': `Date`, 'col.time': `UTC time`, 'col.freq': `Frequency`,
