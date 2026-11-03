@@ -17,7 +17,8 @@ Help with suggesting improvements or development is welcome.
 ## Features
 
 - **Callsign-based access** — no account or password; the **callsign** only separates each operator's data in the same browser.
-- **ADIF import** — load `.adi` / `.adif` files; names (`NAME` / `NAME_INTL`) and emails (`EMAIL`) from the log are reused, and `MY_*` fields prefill the station data.
+- **ADIF import/export** — load `.adi` / `.adif` files; names (`NAME` / `NAME_INTL`) and emails (`EMAIL`) from the log are reused, and `MY_*` fields prefill the station data.
+- **Add/Edit QSOs Manually.
 - **QSL designer** — 1240 × 797 px card with background image, predefined logos, personal icons, free texts and a configurable QSO table. Elements can be dragged, resized, hidden and restyled.
 - **Template variables** — `{MY_CALL}`, `{CALL}`, `{NAME}`, `{DATE}`, `{BAND}`, `{MODE}`, `{QSOS}` and many more, usable in card texts and in the email subject/message.
 - **QRZ.com lookup** — fills in names and public emails using a QRZ XML session key, with caching and portable-callsign fallback.
