@@ -142,7 +142,8 @@
 <div id="login">
   <div class="card">
     <img src="post-card.png" width="250" height="163" >
-    <h1 data-i18n="login.title">📻 Generador de QSL Point 📨</h1>
+    <h1 data-i18n="login.title">📻 Generador de QSL 📨</h1>
+    <h1>v1.0.5</h1>
     <p class="muted small" data-i18n="login.intro">Ingresa tu indicativo para comenzar. Tus datos se guardan solo en este navegador, nunca en el servidor. Tú decides si también se recuerdan el Session ID de QRZ y la contraseña de Gmail.</p>
     <p class="muted small" data-i18n="credit">Creado por HK4Q</p>
     <input id="loginCall" type="text" placeholder="HK4AAA" autocomplete="off" maxlength="15">
@@ -161,7 +162,7 @@
 
 <header>
   <img src="post-card.png" width="82" height="54" >
-  <h1 data-i18n="hdr.title">Generador de QSL - </h1>
+  <h1 data-i18n="hdr.title">Generador de QSL - v1.0.5</h1>
   <span class="call" id="hdrCall"></span>
   <span class="spacer"></span>
   <span class="muted small" id="saveInfo"></span>
@@ -325,14 +326,11 @@
         <div class="drop" id="adifDrop"><span data-i18n-html="adif.drop">Arrastra aquí tu archivo <b>.adi / .adif</b> o haz clic para elegirlo</span>
           <input type="file" id="adifFile" accept=".adi,.adif,.txt" hidden>
         </div>
-      </div>
-      <div class="toolbar">
-        <span style="flex:1"></span>
         <button id="addQso" data-i18n="qf.add">+ Añadir contacto</button>
         <button id="editQso" data-i18n="qf.editSel">✎ Editar seleccionado</button>
         <button id="dlZip" data-i18n="dlZip" title="Descargar QSLs seleccionadas a un archivo ZIP -- Download the selected QSLs in a ZIP file">💾 seleccionadas (ZIP)</button>
         <button id="expAdif" data-i18n="expAdif" title="Exportar los contactos seleccionados como archivo ADIF -- Export the selected contacts as an ADIF file">📤 Exportar ADIF</button>
-        <input type="text" id="filter" placeholder="Filtrar…" data-i18n-ph="filter.ph" style="width:160px">
+        <span style="flex:1"></span><input type="text" id="filter" placeholder="Filtrar…" data-i18n-ph="filter.ph" style="width:160px">
       </div>
       <div class="tableWrap">
         <table>
@@ -363,10 +361,10 @@
     <label data-i18n="th.call">Indicativo</label><input type="text" name="call" required maxlength="20" style="text-transform:uppercase">
     <div class="row">
       <div><label data-i18n="th.date">Fecha</label><input type="date" name="date" required></div>
-      <div><label>UTC</label><input type="text" name="time" required placeholder="HH:MM" maxlength="5" inputmode="numeric" pattern="([01][0-9]|2[0-3]):[0-5][0-9]" title="HH:MM (24h)"></div>
+      <div><label>🕐 UTC</label><input type="text" name="time" required placeholder="HH:MM" maxlength="5" inputmode="numeric" pattern="([01][0-9]|2[0-3]):[0-5][0-9]" title="HH:MM (24h)"></div>
     </div>
     <div class="row">
-      <div><label>MHz</label><input type="number" name="freq" step="any" min="0"></div>
+      <div><label>📻 MHz</label><input type="number" name="freq" step="any" min="0"></div>
       <div><label data-i18n="th.band">Banda</label><input type="text" name="band" data-i18n-ph="qf.bandPh" placeholder="auto"></div>
       <div><label data-i18n="th.mode">Modo</label><input type="text" name="mode" placeholder="SSB" required style="text-transform:uppercase"></div>
     </div>
@@ -411,15 +409,15 @@ const titleCase = s => String(s || '').toLowerCase().replace(/(^|[\s\-'"(])(\p{L
 // El idioma vive en <html lang>; lo fija el script del <head> (preferencia guardada en "qsl-lang" o, si no hay, el idioma del navegador).
 const I18N = {
 es: {
-  'title': `Generador de QSL`,
-  'credit': `Creado por HK4Q`,
+  'title': `Generador de QSL v1.0.5`,
+  'credit': `v1.0.5 - Creado por HK4Q`,
   'disclaimer_title':'EXCLUSIÓN DE GARANTÍAS Y LIMITACIÓN DE RESPONSABILIDAD',
   'disclaimer':'EL SOFTWARE SE PROPORCIONA "TAL CUAL" Y "SEGÚN DISPONIBILIDAD", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O IMPLÍCITA, INCLUIDAS, ENTRE OTRAS, LAS GARANTÍAS DE COMERCIABILIDAD, IDONEIDAD PARA UN FIN PARTICULAR Y NO INFRACCIÓN.\nEN NINGÚN CASO EL AUTOR, LOS DESARROLLADORES O LOS TITULARES DEL COPYRIGHT SERÁN RESPONSABLES DE NINGÚN DAÑO DIRECTO, INDIRECTO, INCIDENTAL, ESPECIAL, PUNITIVO O CONSECUENTE (INCLUYENDO, PÉRDIDA DE DATOS, INTERRUPCIÓN DE LA ACTIVIDAD COMERCIAL O PÉRDIDA DE BENEFICIOS) QUE DERIVE DEL USO O DE LA IMPOSIBILIDAD DE USO DEL SOFTWARE, AUNQUE SE HAYA ADVERTIDO DE LA POSIBILIDAD DE DICHOS DAÑOS.\nEL USUARIO ASUME TODO EL RIESGO EN CUANTO A LA CALIDAD, EL RENDIMIENTO Y LA SEGURIDAD DEL PROGRAMA.',
   'login.title': `📻 Generador de QSL 📨`,
   'login.intro': `Ingresa tu indicativo para comenzar. Tus datos se guardan solo en este navegador, nunca en el servidor. Tú decides si también se recuerdan el Session ID de QRZ y la contraseña de Gmail.`,
   'login.enter': `Entrar`,
   'manual': `📖 Manual de usuario`,
-  'hdr.title': `Generador de QSL - `,
+  'hdr.title': `Generador de QSL - v1.0.5`,
   'hdr.change': `Cambiar indicativo`,
   'hdr.reset': `🗑 Borrar todo`,
   'fileWarn': `Abriste la página como archivo local. La consulta a QRZ y el envío de correos necesitan el servidor: ejecuta <code>python server.py</code> y entra a <a href="http://localhost:8000">http://localhost:8000</a>.`,
@@ -532,15 +530,15 @@ es: {
   'confirm.wipe': `⚠ ATENCIÓN: se borrarán TODOS los datos guardados en este navegador:\n\n• Contactos cargados del ADIF y estado de los envíos\n• Datos de la estación, diseño de la QSL, fondo e iconos personales\n• Session ID de QRZ y datos consultados\n• Cuenta de Gmail, contraseña de aplicación y mensaje del correo\n\nEsta acción no se puede deshacer. ¿Deseas continuar?`,
 },
 en: {
-  'title': `QSL Generator`,
-  'credit': `Created by HK4Q`,
+  'title': `QSL Generator - v1.0.5`,
+  'credit': `v1.0.5 - Created by HK4Q`,
   'disclaimer_title':'DISCLAIMER OF WARRANTIES AND LIMITATION OF LIABILITY',
   'disclaimer':'THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE," WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.\nIN NO EVENT SHALL THE AUTHOR, DEVELOPERS, OR COPYRIGHT HOLDERS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, PUNITIVE, OR CONSEQUENTIAL DAMAGES (INCLUDING LOSS OF DATA, BUSINESS INTERRUPTION, OR LOSS OF PROFITS) ARISING FROM THE USE OR INABILITY TO USE THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.\nTHE USER ASSUMES ALL RISK REGARDING THE QUALITY, PERFORMANCE, AND SECURITY OF THE PROGRAM.',
   'login.title': `📻 QSL Generator 📨`,
   'login.intro': `Enter your callsign to get started. Your data is stored only in this browser, never on the server. You decide whether the QRZ Session ID and the Gmail password are remembered too.`,
   'login.enter': `Enter`,
   'manual': `📖 User manual`,
-  'hdr.title': `QSL Generator - `,
+  'hdr.title': `QSL Generator - v1.0.5`,
   'hdr.change': `Change callsign`,
   'hdr.reset': `🗑 Delete all`,
   'fileWarn': `You opened the page as a local file. The QRZ lookup and email sending need the server: run <code>python server.py</code> and go to <a href="http://localhost:8000">http://localhost:8000</a>.`,
@@ -816,7 +814,8 @@ function parseADIF(buf) {
 async function loadAdif(file) {
   const recs = parseADIF(await file.arrayBuffer());
   if (!recs.length) { alert(t('adif.none')); return; }
-  state.qsos = recs.map((r, i) => ({ ...r, call:r.call.toUpperCase(), _id:i, _sel:true, _status:'' }));
+  state.qsos = recs.map((r, i) => ({ ...r, call:r.call.toUpperCase(), _id:i, _sel:true,
+    _status: String(r.qsl_sent || '').toUpperCase() === 'Y' ? '✓ Enviado' : '' }));   // QSL_SENT=Y: ya enviada
   state.fileName = file.name; state.preview = 0;
   // Completa datos de mi estación con lo que traiga el ADIF, sin sobrescribir lo ya escrito
   const f = recs[0], s = state.station;
@@ -1514,7 +1513,8 @@ $('#sendBtn').onclick = async () => {
           subject:fill(m.subject, v), text:fill(m.body, v),
           attachments:g.map(x => ({ filename:qslName(x), mime:mime(), data:qslBase64(x) })),
         });
-        g.forEach(x => x._status = '✓ Enviado'); ok++;
+        // Se marca QSL_SENT=Y (y la fecha) para que quede en el ADIF exportado
+        g.forEach(x => { x._status = '✓ Enviado'; x.qsl_sent = 'Y'; x.qslsdate = new Date().toISOString().slice(0, 10).replace(/-/g, ''); }); ok++;
         log(t('send.sentTo', { c:q.call, to, n:g.length }), 'ok');
       } catch (e) {
         g.forEach(x => x._status = '✗ ' + e.message);
