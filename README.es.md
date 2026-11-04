@@ -11,8 +11,8 @@ Aplicación web gratuita que convierte tu log ADIF en tarjetas QSL electrónicas
 **Pruébala ya: [qslgen.hk4q.net](https://qslgen.hk4q.net/)** — sin cuenta y sin instalar nada.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://qslgen.hk4q.net/screen-dark.png">
-  <img src="https://qslgen.hk4q.net/screen-light.png" alt="Turn your ADIF log into customized electronic QSL cards, enrich contacts with QRZ.com and send them by Gmail." width="900">
+  <source media="(prefers-color-scheme: dark)" srcset="https://assets.zyrosite.com/TbT7kBXb1ry5aaj6/screen-dark-LV9AGFwHCyxBzzNs.png">
+  <img src="https://assets.zyrosite.com/TbT7kBXb1ry5aaj6/screen-light-XKk5kPE6aGytmNwP.png" alt="Convierte tu registro ADIF en tarjetas QSL electrónicas personalizadas, enriquece los contactos con información de QRZ.com y envíalas a través de Gmail." width="900">
 </picture>
 
 ## Por qué existe
