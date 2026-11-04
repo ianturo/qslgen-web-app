@@ -12,7 +12,7 @@ Aplicación web gratuita que convierte tu log ADIF en tarjetas QSL electrónicas
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://assets.zyrosite.com/TbT7kBXb1ry5aaj6/screen-dark-LV9AGFwHCyxBzzNs.png">
-  <img src="https://assets.zyrosite.com/TbT7kBXb1ry5aaj6/screen-light-XKk5kPE6aGytmNwP.png" alt="Convierte tu registro ADIF en tarjetas QSL electrónicas personalizadas, enriquece los contactos con información de QRZ.com y envíalas a través de Gmail." width="900">
+  <img src="https://assets.zyrosite.com/TbT7kBXb1ry5aaj6/screen-light-XKk5kPE6aGytmNwP.png" alt="Convierte tu registro ADIF en tarjetas QSL electrónicas personalizadas, enriquece los contactos con información de QRZ.com y envíalas a través de Gmail.">
 </picture>
 
 ## Por qué existe

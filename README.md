@@ -12,7 +12,7 @@ Free web app that turns your ADIF log into custom electronic QSL cards, looks up
 
 <picture>
 <source media="(prefers-color-scheme: dark)" srcset="https://assets.zyrosite.com/TbT7kBXb1ry5aaj6/screen-dark-LV9AGFwHCyxBzzNs.png">
-  <img src="https://assets.zyrosite.com/TbT7kBXb1ry5aaj6/screen-light-XKk5kPE6aGytmNwP.png" alt="Turn your ADIF log into customized electronic QSL cards, enrich contacts with QRZ.com and send them by Gmail." width="900">
+  <img src="https://assets.zyrosite.com/TbT7kBXb1ry5aaj6/screen-light-XKk5kPE6aGytmNwP.png" alt="Turn your ADIF log into customized electronic QSL cards, enrich contacts with QRZ.com and send them by Gmail." >
 </picture>
 
 ## Why this exists
