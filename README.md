@@ -128,7 +128,7 @@ The interface is static HTML/CSS/JS in `public/`. Next.js serves those files and
 | `/api/send` | `POST` | Sends one QSL email with base64 attachments (body limit 25 MB) |
 | `/api/logos` | `GET` | Lists the images in `public/logos` for the logo grid |
 
-```
+```bash
 app/
   layout.js           Root layout required by Next.js
   api/
