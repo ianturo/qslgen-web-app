@@ -130,20 +130,20 @@ La interfaz es HTML/CSS/JS estático en `public/`. Next.js sirve esos archivos y
 
 ```
 app/
-  layout.js           Layout raíz requerido por Next.js
-  api/
-    logos/route.js    Lista los logos disponibles
-    qrz/route.js      Proxy XML de QRZ.com
-    send/route.js     Envío por Gmail
-    verify/route.js   Verificación de credenciales de Gmail
+    layout.js           Layout raiz requerido por Next.js
+    api/
+        logos/route.js    Lista los logos disponibles
+        qrz/route.js      Proxy XML de QRZ.com
+        send/route.js     Envío por Gmail
+        verify/route.js   Verificación de credenciales de Gmail
 lib/
-  mail.js             Transporte SMTP, utilidades JSON y mapeo de errores
+    mail.js               Transporte SMTP, utilidades JSON y mapeo de errores
 public/
-  index.html          Interfaz del generador
-  manual.html         Manual de usuario bilingüe
-  post-card.png       Logo de la app
-  logos/              Logos predefinidos del diseñador
-next.config.mjs       Redirige "/" a index.html y desactiva la cabecera powered-by
+    index.html            Interfaz del generador
+    manual.html           Manual de usuario bilingüe
+    post-card.png         Logo de la app
+    logos/                Logos predefinidos del diseñador
+next.config.mjs           Redirige "/" a index.html y desactiva la cabecera powered-by
 ```
 
 **Tecnologías:** [Next.js](https://nextjs.org/) 16 (App Router, Webpack) · [Nodemailer](https://nodemailer.com/) para SMTP de Gmail · front end estático en `public/`.
