@@ -37,6 +37,10 @@ La interfaz y el manual de usuario están en **inglés y español**, con temas c
 
 ## Cómo funciona
 
+<picture>
+  <img src="https://assets.zyrosite.com/TbT7kBXb1ry5aaj6/workflow-es-yqt1s6QhrxI8sv78.svg" alt="Flujo de funcionamiento">
+</picture>
+
 1. **Entra** con tu indicativo.
 2. **Carga tu ADIF** exportado desde tu programa de log (Log4OM, N1MM, WSJT-X, HRD, QRZ Logbook, etc.).
 3. **Completa tu estación**: indicativo, nombre, QTH, país, grid, zonas CQ/ITU, equipo, antena, potencia, formato de fecha y texto extra. Los valores vacíos se eliminan de la tarjeta en lugar de dejar etiquetas huérfanas.

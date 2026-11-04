@@ -37,6 +37,10 @@ The interface and the user manual are available in **English and Spanish**, with
 
 ## How it works
 
+<picture>
+  <img src="https://assets.zyrosite.com/TbT7kBXb1ry5aaj6/workflow-en-22u9oRfiurIuTAW6.svg" alt="Flujo de funcionamiento">
+</picture>
+
 1. **Sign in** with your callsign.
 2. **Load your ADIF** exported from your logging program (Log4OM, N1MM, WSJT-X, HRD, QRZ Logbook, etc.).
 3. **Fill in your station**: callsign, name, QTH, country, grid, CQ/ITU zones, rig, antenna, power, date format and extra text. Empty values are removed from the card instead of leaving orphan labels.
